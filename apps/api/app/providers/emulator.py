@@ -44,6 +44,17 @@ def _classifier_payload(request: JsonObject, default_model: str | None) -> JsonO
     }
 
 
+def _parse_result(body: object) -> SystemOneResult:
+    """Parse either contract: a strict SystemOneResult first, the Simple Jev
+    classifier mapping second — gateways may serve either shape on either
+    path (the public demo answers /v1/systemone with classifier semantics
+    and classifier-shaped bodies)."""
+    try:
+        return SystemOneResult.model_validate(body)
+    except (ValidationError, ValueError):
+        return _result_from_classifier(body)
+
+
 def _result_from_classifier(data: object) -> SystemOneResult:
     """Map the classifier response onto the SystemOneResult contract."""
     if not isinstance(data, dict):
@@ -129,11 +140,13 @@ class EmulatorClient:
         except httpx.HTTPError as error:
             raise EmulatorProviderError(message="The emulator could not be reached.") from error
 
-        # A 404 means THIS ENDPOINT has no systemone route: it may be a
-        # Simple Jev classifier deployment instead (paste-the-URL simplicity
-        # — no adapter, no protocol ceremony). One translation hop; any
-        # other verdict (success, auth, rate limit…) is final.
-        if response.status_code == 404:
+        # A 404/400 means THIS ENDPOINT does not speak the systemone
+        # contract as posted: it may be a Simple Jev classifier deployment
+        # instead (paste-the-URL simplicity — no adapter, no protocol
+        # ceremony; the public demo even answers /v1/systemone with
+        # classifier semantics and "model required"). One translation hop;
+        # any other verdict (auth, rate limit…) is final.
+        if response.status_code in (400, 404):
             try:
                 classifier_response = await self._client.post(
                     CLASSIFIER_ENDPOINT,
@@ -152,7 +165,13 @@ class EmulatorClient:
                     message=f"The emulator returned HTTP {classifier_response.status_code}.",
                     status=classifier_response.status_code,
                 )
-            return _result_from_classifier(classifier_response.json())
+            try:
+                return _parse_result(classifier_response.json())
+            except EmulatorProviderError:
+                raise EmulatorProviderError(
+                    message="The emulator returned an unparsable result.",
+                    status=classifier_response.status_code,
+                ) from None
 
         if not response.is_success:
             raise EmulatorProviderError(
@@ -160,8 +179,8 @@ class EmulatorClient:
                 status=response.status_code,
             )
         try:
-            return SystemOneResult.model_validate(response.json())
-        except (ValidationError, ValueError) as error:
+            return _parse_result(response.json())
+        except (ValidationError, ValueError, EmulatorProviderError) as error:
             raise EmulatorProviderError(
                 message="The emulator returned an unparsable result.",
                 status=response.status_code,

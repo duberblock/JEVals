@@ -230,3 +230,32 @@ def test_classifier_rejection_surfaces_honestly_and_non_404_never_falls_back():
     with pytest.raises(EmulatorProviderError):
         asyncio.run(client_with(httpx.MockTransport(unauthorized)).execute(REQUEST))
     assert len(captured) == 1
+
+
+def test_a_400_on_systemone_escalates_too_and_either_body_shape_parses():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        if request.url.path == "/v1/systemone":
+            # The public demo's actual behavior: the gateway answers the
+            # systemone path with classifier semantics ("model required").
+            return httpx.Response(400, json={"error": {"message": "The 'model' field is required."}})
+        return httpx.Response(200, json=_classifier_reply())
+
+    result = asyncio.run(client_with(httpx.MockTransport(handler)).execute(REQUEST))
+
+    assert len(captured) == 2
+    assert str(captured[1].url).endswith("/v1/classifier")
+    assert result.answers["q"].choice == "yes"
+
+
+def test_a_classifier_shaped_body_on_the_systemone_path_still_parses():
+    def handler(request: httpx.Request) -> httpx.Response:
+        # Extra per-answer keys and no systemone envelope — the tolerant
+        # parser maps the classifier shape wherever it arrives.
+        return httpx.Response(200, json=_classifier_reply())
+
+    result = asyncio.run(client_with(httpx.MockTransport(handler)).execute(REQUEST))
+    assert result.model == "featherless-ai/Qwen3.6-35B-A3B-classifier"
+    assert result.usage.input_tokens == 42
