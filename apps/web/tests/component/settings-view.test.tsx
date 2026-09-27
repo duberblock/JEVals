@@ -105,7 +105,7 @@ describe('SettingsView', () => {
 
     const judge = within(screen.getByTestId('settings-card-judge'))
     fireEvent.change(judge.getByLabelText('Endpoint'), { target: { value: 'http://localhost:11434/v1' } })
-    fireEvent.change(judge.getByLabelText('Model'), { target: { value: 'qwen3:8b' } })
+    fireEvent.change(judge.getByLabelText('Model', { exact: false }), { target: { value: 'qwen3:8b' } })
     fireEvent.click(within(screen.getByTestId('settings-card-judge')).getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(puts).toHaveLength(1))
@@ -114,7 +114,7 @@ describe('SettingsView', () => {
     })
 
     // Now type a key and save again — only then does api_key travel.
-    fireEvent.change(judge.getByLabelText('API key'), { target: { value: 'ollama' } })
+    fireEvent.change(judge.getByLabelText('API key', { exact: false }), { target: { value: 'ollama' } })
     fireEvent.click(within(screen.getByTestId('settings-card-judge')).getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(puts).toHaveLength(2))
     expect(puts[1]).toEqual({

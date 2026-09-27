@@ -43,6 +43,17 @@ function sourceWord(source: string, dictionary: Dictionary['settings']): string 
 
 type CardState = 'idle' | 'saving' | 'saved' | 'error'
 
+// What each provider genuinely requires to become available (mirrors the
+// API's own preconditions): the emulator works out of the box, JEV needs a
+// key, and each LLM leg needs key AND model.
+const REQUIRED: Record<ProviderName, { model: boolean; apiKey: boolean }> = {
+  emulator: { model: false, apiKey: false },
+  jev: { model: false, apiKey: true },
+  judge: { model: true, apiKey: true },
+  independent: { model: true, apiKey: true },
+}
+
+
 function ProviderCard({
   name,
   view,
@@ -54,6 +65,7 @@ function ProviderCard({
   dictionary: Dictionary['settings']
   demo?: { url: string; label: string }
 }) {
+  const required = REQUIRED[name]
   const [endpoint, setEndpoint] = useState(view.endpoint ?? '')
   const [model, setModel] = useState(view.model ?? '')
   const [apiKey, setApiKey] = useState('')
@@ -145,6 +157,7 @@ function ProviderCard({
         <div className="grid gap-1">
           <label className="text-sm font-medium" htmlFor={`settings-${name}-model`}>
             {dictionary.model}
+            {required.model ? <span aria-hidden="true" className="text-primary"> *</span> : null}
           </label>
           <input
             className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm"
@@ -157,6 +170,7 @@ function ProviderCard({
         <div className="grid gap-1 sm:col-span-2">
           <label className="text-sm font-medium" htmlFor={`settings-${name}-api-key`}>
             {dictionary.apiKey}
+            {required.apiKey ? <span aria-hidden="true" className="text-primary"> *</span> : null}
           </label>
           <input
             autoComplete="off"
