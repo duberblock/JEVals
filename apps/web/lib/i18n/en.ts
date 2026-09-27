@@ -706,6 +706,18 @@ export const en = {
     unavailable: 'Unavailable',
     loadError: 'Could not load the settings.',
     saveError: 'Could not save. Check the endpoint and try again.',
+    copyJudge: 'Copy Judge configuration',
+    copyJudgeDone: 'Judge configuration copied',
+    copyJudgeError: 'The Judge has no configuration to copy yet.',
+    helpTitle: 'How to fill this form',
+    helpOpen: 'View guide',
+    help: {
+      emulator:
+        'Works out of the box — the default endpoint is already set. The model only matters for Simple Jev endpoints (example: featherless-ai/Qwen3.6-35B-A3B-classifier — empty uses that default). The API key only if your endpoint requires auth.',
+      jev: 'The typesafe.ai baseline. The API key is required; the model is optional and defaults to jev-latest.',
+      judge: 'Any OpenAI-compatible endpoint. Endpoint, model and API key are all required — example: https://api.openai.com/v1 with gpt-5-nano.',
+      independent: 'Same shape as the Judge — press "Copy Judge configuration" to avoid typing it twice.'
+    },
     providers: {
       emulator: {
         name: 'Emulator',

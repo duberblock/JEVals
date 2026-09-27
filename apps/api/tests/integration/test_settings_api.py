@@ -249,3 +249,29 @@ def test_compose_style_empty_env_strings_read_as_not_configured(client, monkeypa
     assert providers["emulator"]["keySet"] is False
     assert providers["judge"]["keySet"] is False
     assert providers["independent"]["keySet"] is False
+
+
+def test_copy_judge_moves_the_effective_configuration_into_independent(client, monkeypatch):
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
+    client.put(
+        "/api/v1/settings",
+        json={"judge": {"model": "gpt-5-nano", "api_key": "judge-key"}},
+    )
+
+    response = client.post("/api/v1/settings/copy-judge")
+
+    assert response.status_code == 200
+    independent = response.json()["providers"]["independent"]
+    assert independent["model"] == "gpt-5-nano"
+    assert independent["keySet"] is True
+    assert independent["configuredHere"] == {"endpoint": True, "model": True, "apiKey": True}
+    # The key never travels in the response.
+    assert "judge-key" not in response.text
+
+
+def test_copy_judge_with_nothing_configured_answers_a_problem(client):
+    response = client.post("/api/v1/settings/copy-judge")
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "The Judge has no configuration to copy."

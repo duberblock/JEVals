@@ -141,6 +141,9 @@ export async function installHermeticApi(
     if (pathname === '/api/v1/settings' && method === 'PUT') {
       return fulfillJson(route, settingsView)
     }
+    if (pathname === '/api/v1/settings/copy-judge' && method === 'POST') {
+      return fulfillJson(route, settingsView)
+    }
     if (pathname === '/api/v1/validations' && method === 'POST') {
       return fulfillJson(route, validation)
     }

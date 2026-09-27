@@ -189,3 +189,50 @@ it('the one-click public demo fills and saves the emulator endpoint', async () =
     expect(screen.getByTestId('settings-emulator-status')).toHaveTextContent('Saved')
   )
 })
+
+it('shows the guide collapsed by default, opens it, hints models and copies the judge config', async () => {
+  const posts: Array<{ url: string; body?: string }> = []
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    if (url.endsWith('/copy-judge') && init?.method === 'POST') {
+      posts.push({ url })
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ providers: VIEW }),
+      } as Response
+    }
+    if (init?.method === 'PUT') {
+      posts.push({ url, body: String(init.body) })
+      return { ok: true, status: 200, json: async () => ({ providers: VIEW }) } as Response
+    }
+    return { ok: true, status: 200, json: async () => ({ providers: VIEW }) } as Response
+  })
+  vi.stubGlobal('fetch', fetchMock)
+
+  render(<SettingsView />)
+  await screen.findByTestId('settings-card-independent')
+
+  // The guide is a §38-style disclosure: collapsed by default.
+  const helpTrigger = screen.getByRole('button', { name: 'How to fill this form' })
+  expect(helpTrigger).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByTestId('settings-help-region')).not.toBeInTheDocument()
+  fireEvent.click(helpTrigger)
+  expect(helpTrigger).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByText(/default endpoint is already set/i)).toBeInTheDocument()
+
+  // Model inputs teach with example placeholders.
+  const judge = within(screen.getByTestId('settings-card-judge'))
+  expect((judge.getByLabelText('Model', { exact: false }) as HTMLInputElement).placeholder).toBe('gpt-5-nano')
+  expect((within(screen.getByTestId('settings-card-jev')).getByLabelText('Model') as HTMLInputElement).placeholder).toBe('jev-latest')
+
+  // One click copies the judge configuration server-side.
+  const independent = within(screen.getByTestId('settings-card-independent'))
+  fireEvent.click(independent.getByRole('button', { name: 'Copy Judge configuration' }))
+  await waitFor(() =>
+    expect(independent.getByTestId('settings-independent-status')).toHaveTextContent(
+      'Judge configuration copied'
+    )
+  )
+  expect(posts.some((p) => p.url.endsWith('/copy-judge'))).toBe(true)
+})

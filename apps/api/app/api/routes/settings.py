@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -63,5 +63,43 @@ def put_settings(
     store.save_overrides(session, stored_patch)
     # The provider singletons read the effective config at build time —
     # drop them so the next request rebuilds with the new configuration.
+    reset_provider_caches()
+    return {"providers": public_view(effective_providers(session))}
+
+
+class CopyJudgeIn(BaseModel):
+    """The copy action carries no body fields — it reads the judge's
+    EFFECTIVE configuration server-side and never exposes the key."""
+
+
+@router.post("/copy-judge")
+def copy_judge_to_independent(
+    session: Annotated[Session, Depends(get_session)],
+    _: CopyJudgeIn | None = None,
+) -> dict:
+    """Copy the Judge's effective configuration into Independent.
+
+    The copy happens server-side: the API key (UI-stored or from the
+    environment) moves encrypted-store-to-encrypted-store and never
+    reaches the client. Only the fields the Judge actually HAS are
+    copied — anything it lacks stays untouched on Independent.
+    """
+    providers = effective_providers(session)
+    judge = providers["judge"]
+    # The endpoint always has at least its environment default — a Judge
+    # with neither key nor model has nothing worth copying.
+    if judge.api_key is None and judge.model is None:
+        raise HTTPException(
+            status_code=400,
+            detail="The Judge has no configuration to copy.",
+        )
+    fields: dict[str, str | None] = {}
+    if judge.endpoint is not None:
+        fields["endpoint"] = judge.endpoint
+    if judge.model is not None:
+        fields["model"] = judge.model
+    if judge.api_key is not None:
+        fields["api_key"] = encrypt_secret(judge.api_key)
+    store.save_overrides(session, {"independent": fields})
     reset_provider_caches()
     return {"providers": public_view(effective_providers(session))}

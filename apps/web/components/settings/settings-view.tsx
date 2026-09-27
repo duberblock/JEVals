@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 
 import { Button } from '../ui/button'
 import type { Dictionary } from '../../lib/i18n'
@@ -46,6 +46,15 @@ type CardState = 'idle' | 'saving' | 'saved' | 'error'
 // What each provider genuinely requires to become available (mirrors the
 // API's own preconditions): the emulator works out of the box, JEV needs a
 // key, and each LLM leg needs key AND model.
+// Example models shown as placeholders — they teach the shape without
+// inventing values (raw model IDs, identical in both locales).
+const MODEL_HINTS: Record<ProviderName, string> = {
+  emulator: 'featherless-ai/Qwen3.6-35B-A3B-classifier',
+  jev: 'jev-latest',
+  judge: 'gpt-5-nano',
+  independent: 'gpt-5-nano',
+}
+
 const REQUIRED: Record<ProviderName, { model: boolean; apiKey: boolean }> = {
   emulator: { model: false, apiKey: false },
   jev: { model: false, apiKey: true },
@@ -71,6 +80,18 @@ function ProviderCard({
   const [apiKey, setApiKey] = useState('')
   const [state, setState] = useState<CardState>('idle')
   const [cleared, setCleared] = useState(false)
+  const [copied, setCopied] = useState<'idle' | 'done' | 'error'>('idle')
+
+  async function copyJudge() {
+    setCopied('idle')
+    try {
+      const response = await fetch('/api/v1/settings/copy-judge', { method: 'POST' })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      setCopied('done')
+    } catch {
+      setCopied('error')
+    }
+  }
   const labels = dictionary.providers[name]
 
   async function save(clearKey: boolean, endpointOverride?: string | null) {
@@ -163,6 +184,7 @@ function ProviderCard({
             className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm"
             id={`settings-${name}-model`}
             onChange={(event) => setModel(event.target.value)}
+            placeholder={MODEL_HINTS[name]}
             type="text"
             value={model}
           />
@@ -187,6 +209,11 @@ function ProviderCard({
         <Button disabled={state === 'saving'} onClick={() => void save(false)} type="button">
           {state === 'saving' ? dictionary.saving : dictionary.save}
         </Button>
+        {name === 'independent' ? (
+          <Button disabled={state === 'saving'} onClick={() => void copyJudge()} type="button" variant="outline">
+            {dictionary.copyJudge}
+          </Button>
+        ) : null}
         {view.configuredHere.apiKey ? (
           <Button
             disabled={state === 'saving'}
@@ -204,7 +231,11 @@ function ProviderCard({
               : dictionary.saved
             : state === 'error'
               ? dictionary.saveError
-              : keyStatus}
+              : copied === 'done'
+                ? dictionary.copyJudgeDone
+                : copied === 'error'
+                  ? dictionary.copyJudgeError
+                  : keyStatus}
         </span>
       </div>
       <p className="mt-2 text-xs text-muted-foreground" data-testid={`settings-${name}-availability`}>
@@ -216,6 +247,44 @@ function ProviderCard({
         </p>
       ) : null}
     </section>
+  )
+}
+
+function HelpDisclosure({ dictionary }: { dictionary: Dictionary['settings'] }) {
+  const [open, setOpen] = useState(false)
+  const triggerId = useId()
+  const regionId = useId()
+  return (
+    <div className="mt-4" data-testid="settings-help">
+      <Button
+        aria-controls={regionId}
+        aria-expanded={open}
+        id={triggerId}
+        onClick={() => setOpen((value) => !value)}
+        size="xs"
+        type="button"
+        variant="ghost"
+      >
+        {dictionary.helpTitle}
+      </Button>
+      {open ? (
+        <div
+          aria-labelledby={triggerId}
+          className="mt-2 space-y-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground"
+          id={regionId}
+          role="region"
+        >
+          {(['emulator', 'jev', 'judge', 'independent'] as const).map((name) => (
+            <p key={name}>
+              <span className="font-medium text-foreground">
+                {dictionary.providers[name].name}:
+              </span>{' '}
+              {dictionary.help[name]}
+            </p>
+          ))}
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -247,6 +316,7 @@ export function SettingsView() {
         {dictionary.settings.title}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">{dictionary.settings.subtitle}</p>
+      <HelpDisclosure dictionary={dictionary.settings} />
       <div className="mt-6 grid gap-4">
         {failed ? (
           <p className="text-sm text-destructive" data-testid="settings-error">
