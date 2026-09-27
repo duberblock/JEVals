@@ -651,5 +651,51 @@ export const es = {
     // símbolo de unidad, idéntico byte a byte en ambos locales por diseño
     // (jamás una palabra traducida).
     seconds: 's'
-  }
+  },
+
+  // Configuración de proveedores (UI): las cuatro tarjetas — endpoint,
+  // modelo y API key (cifrada en reposo) por proveedor, guardadas vía
+  // /api/v1/settings. El texto plano de una key jamás regresa del API; la
+  // UI solo sabe si hay una guardada.
+  settings: {
+    headerTitle: 'Configuración',
+    title: 'Configuración de proveedores',
+    subtitle:
+      'Endpoint, modelo y API key para cada integración. Las keys se guardan cifradas en reposo; lo que se deje en blanco conserva su valor actual.',
+    save: 'Guardar',
+    saving: 'Guardando…',
+    saved: 'Guardado',
+    clearKey: 'Borrar la key guardada',
+    keyCleared: 'Key borrada',
+    endpoint: 'Endpoint',
+    model: 'Modelo',
+    apiKey: 'API key',
+    keySetHere: 'Hay una key guardada aquí (cifrada en reposo)',
+    keySetEnv: 'Hay una key configurada en el entorno',
+    keyNotSet: 'Sin key configurada',
+    fromEnv: 'del entorno',
+    configuredHere: 'configurado aquí',
+    available: 'Disponible',
+    unavailable: 'No disponible',
+    loadError: 'No se pudo cargar la configuración.',
+    saveError: 'No se pudo guardar. Revisa el endpoint e intenta de nuevo.',
+    providers: {
+      emulator: {
+        name: 'Emulador',
+        description: 'Cualquier servicio que implemente POST /v1/systemone (p. ej. el adaptador local de Simple Jev).'
+      },
+      jev: {
+        name: 'Baseline JEV',
+        description: 'La API SystemOne de typesafe.ai (o un despliegue compatible).'
+      },
+      judge: {
+        name: 'Judge',
+        description: 'El juez semántico — cualquier endpoint OpenAI-compatible de chat completions.'
+      },
+      independent: {
+        name: 'Independiente',
+        description: 'La predicción independiente — cualquier endpoint OpenAI-compatible de chat completions.'
+      }
+    }
+  },
 }

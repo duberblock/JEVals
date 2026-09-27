@@ -1,6 +1,41 @@
 import type { Page, Route } from '@playwright/test'
 
 import capabilities from './capabilities.json'
+
+// The settings view the /settings screen renders: every provider honest,
+// one key visibly saved (the plaintext never exists client-side).
+const settingsView = {
+  providers: {
+    emulator: {
+      endpoint: 'http://localhost:8100',
+      model: null,
+      keySet: true,
+      available: true,
+      configuredHere: { endpoint: true, model: false, apiKey: true },
+    },
+    jev: {
+      endpoint: 'https://api.typesafe.ai',
+      model: null,
+      keySet: false,
+      available: false,
+      configuredHere: { endpoint: false, model: false, apiKey: false },
+    },
+    judge: {
+      endpoint: 'https://api.openai.com/v1',
+      model: 'gpt-4o-mini',
+      keySet: false,
+      available: false,
+      configuredHere: { endpoint: false, model: false, apiKey: false },
+    },
+    independent: {
+      endpoint: 'https://api.openai.com/v1',
+      model: null,
+      keySet: false,
+      available: false,
+      configuredHere: { endpoint: false, model: false, apiKey: false },
+    },
+  },
+}
 import compareSnapshot from './compare-snapshot.json'
 import emulatorSnapshot from './emulator-snapshot.json'
 import executionSnapshot from './execution-snapshot.json'
@@ -94,6 +129,12 @@ export async function installHermeticApi(
 
     if (pathname === '/api/v1/capabilities' && method === 'GET') {
       return fulfillJson(route, capabilities)
+    }
+    if (pathname === '/api/v1/settings' && method === 'GET') {
+      return fulfillJson(route, settingsView)
+    }
+    if (pathname === '/api/v1/settings' && method === 'PUT') {
+      return fulfillJson(route, settingsView)
     }
     if (pathname === '/api/v1/validations' && method === 'POST') {
       return fulfillJson(route, validation)

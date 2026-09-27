@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { CircleHelp } from 'lucide-react'
+import { CircleHelp, Settings as SettingsIcon } from 'lucide-react'
 
 import { useDictionary } from '../../lib/i18n/use-locale'
 import { RELEASE_VERSION } from '../../lib/version'
@@ -62,6 +62,20 @@ export function AppHeader() {
             href="/how-it-works"
           >
             <CircleHelp aria-hidden="true" className="size-4" size={16} />
+          </Link>
+          {/* Provider settings — the simple environment configuration (the
+              four integration cards with encrypted-at-rest keys). Beside the
+              help link in the utility zone, but from lg only: at 768 the
+              h-14 band fits exactly ONE utility icon beside nav + controls
+              (the §16 sweep gate measures a 1px overflow with two) — the
+              screen stays reachable by URL below lg. */}
+          <Link
+            aria-label={dictionary.settings.headerTitle}
+            className="hidden size-11 items-center justify-center rounded-lg text-foreground hover:bg-muted lg:inline-flex sm:size-9"
+            data-testid="header-settings-link"
+            href="/settings"
+          >
+            <SettingsIcon aria-hidden="true" className="size-4" size={16} />
           </Link>
           <ThemeToggle dictionary={dictionary.theme} />
           <LanguageSelector />

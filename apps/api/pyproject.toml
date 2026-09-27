@@ -12,6 +12,7 @@ dependencies = [
   "httpx>=0.28.1",
   "system-one-adapter[openai]==0.2.0",
   "typesafe-sdk<0.8",
+  "cryptography>=50.0.1",
 ]
 
 [dependency-groups]

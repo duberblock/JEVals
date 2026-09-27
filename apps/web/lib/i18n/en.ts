@@ -672,5 +672,51 @@ export const en = {
     // P42: the run-progress bar's elapsed suffix — a proper unit symbol,
     // byte-identical in both locales by design (never a translated word).
     seconds: 's'
-  }
+  },
+
+  // Provider settings (UI): the four integration cards — endpoint, model and
+  // (encrypted-at-rest) API key per provider, saved through /api/v1/settings.
+  // The plaintext of a saved key never comes back from the API; the UI only
+  // ever learns whether one is set.
+  settings: {
+    headerTitle: 'Settings',
+    title: 'Provider settings',
+    subtitle:
+      'Endpoint, model and API key for each integration. Keys are stored encrypted at rest; anything left blank keeps its current value.',
+    save: 'Save',
+    saving: 'Saving…',
+    saved: 'Saved',
+    clearKey: 'Clear saved key',
+    keyCleared: 'Key cleared',
+    endpoint: 'Endpoint',
+    model: 'Model',
+    apiKey: 'API key',
+    keySetHere: 'A key is saved here (encrypted at rest)',
+    keySetEnv: 'A key is configured in the environment',
+    keyNotSet: 'No key configured',
+    fromEnv: 'from environment',
+    configuredHere: 'configured here',
+    available: 'Available',
+    unavailable: 'Unavailable',
+    loadError: 'Could not load the settings.',
+    saveError: 'Could not save. Check the endpoint and try again.',
+    providers: {
+      emulator: {
+        name: 'Emulator',
+        description: 'Any service implementing POST /v1/systemone (e.g. the local Simple Jev adapter).'
+      },
+      jev: {
+        name: 'JEV baseline',
+        description: 'The typesafe.ai SystemOne API (or a compatible deployment).'
+      },
+      judge: {
+        name: 'Judge',
+        description: 'The semantic judge — any OpenAI-compatible chat-completions endpoint.'
+      },
+      independent: {
+        name: 'Independent',
+        description: 'The independent prediction — any OpenAI-compatible chat-completions endpoint.'
+      }
+    }
+  },
 }

@@ -18,6 +18,25 @@ class Settings(BaseSettings):
     # false switches the independent path to prompted schema + corrective
     # retries with a one-line env change.
     openai_structured_outputs: bool = True
+    # Emulator extras (the UI settings override all of these per field).
+    emulator_api_key: str | None = None
+    emulator_model: str | None = None
+    # JEV model passthrough (JevClient keeps its own default when unset).
+    typesafe_model: str | None = None
+    # Per-leg LLM configuration: when set, wins over the shared OPENAI_*
+    # pair so the judge and the independent prediction can point at
+    # different endpoints/models/keys.
+    judge_api_key: str | None = None
+    judge_base_url: str | None = None
+    judge_model: str | None = None
+    independent_api_key: str | None = None
+    independent_base_url: str | None = None
+    independent_model: str | None = None
+    # Master key for encrypting UI-stored credentials at rest (urlsafe
+    # base64 32 bytes). Unset -> a 0600 settings.key file beside the
+    # database is generated on first use (see app.core.crypto).
+    settings_encryption_key: str | None = None
+    settings_key_file: str | None = None
     # Optional product-level default model for capabilities (§63); the key is
     # omitted from the response while unset — never invent names.
     default_model: str | None = None

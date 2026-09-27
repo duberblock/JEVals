@@ -72,6 +72,9 @@ Canonical names mirror `apps/api/app/core/config.py` (see `.env.example`):
 | `TYPESAFE_API_KEY` / `TYPESAFE_BASE_URL` | JEV baseline provider | unset = source unavailable |
 | `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` | independent + judge provider | unset = source unavailable |
 | `OPENAI_STRUCTURED_OUTPUTS` | structured-output mode for the LLM provider | `true` |
+| `JUDGE_*` / `INDEPENDENT_*` | per-leg overrides (`_API_KEY`/`_BASE_URL`/`_MODEL`) over the shared `OPENAI_*` pair | unset = shared pair |
+| `EMULATOR_API_KEY` / `EMULATOR_MODEL` / `TYPESAFE_MODEL` | extra emulator/JEV fields | unset |
+| `SETTINGS_ENCRYPTION_KEY` | master key for credentials saved via the settings UI | unset → `settings.key` file |
 | `API_PORT` | local API port (`dev`, compose) | `8000` |
 
 Availability is always reported honestly: the `capabilities` endpoint lists

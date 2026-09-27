@@ -27,12 +27,24 @@ services:
       AUTH_USER: ${AUTH_USER:-playground}
       AUTH_PASS: ${AUTH_PASS:-playground}
       EMULATOR_URL: ${EMULATOR_URL:-}
+      EMULATOR_API_KEY: ${EMULATOR_API_KEY:-}
+      EMULATOR_MODEL: ${EMULATOR_MODEL:-}
       TYPESAFE_API_KEY: ${TYPESAFE_API_KEY:-}
       TYPESAFE_BASE_URL: ${TYPESAFE_BASE_URL:-https://api.typesafe.ai}
+      TYPESAFE_MODEL: ${TYPESAFE_MODEL:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
       OPENAI_MODEL: ${OPENAI_MODEL:-}
       OPENAI_STRUCTURED_OUTPUTS: ${OPENAI_STRUCTURED_OUTPUTS:-true}
+      JUDGE_API_KEY: ${JUDGE_API_KEY:-}
+      JUDGE_BASE_URL: ${JUDGE_BASE_URL:-}
+      JUDGE_MODEL: ${JUDGE_MODEL:-}
+      INDEPENDENT_API_KEY: ${INDEPENDENT_API_KEY:-}
+      INDEPENDENT_BASE_URL: ${INDEPENDENT_BASE_URL:-}
+      INDEPENDENT_MODEL: ${INDEPENDENT_MODEL:-}
+      # Master key for credentials saved through the settings UI (unset: a
+      # 0600 settings.key file beside the database is generated on first use).
+      SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:-}
     volumes:
       - ./data:/data
     ports:

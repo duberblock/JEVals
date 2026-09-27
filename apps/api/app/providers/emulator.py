@@ -33,17 +33,31 @@ class EmulatorClient:
         self,
         base_url: str,
         *,
+        api_key: str | None = None,
+        default_model: str | None = None,
         timeout: float = EMULATOR_TIMEOUT_SECONDS,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
+        self.default_model = default_model
+        headers = {}
+        if api_key:
+            # Optional when the emulator deployment requires auth; the key
+            # lives only in this header, never in logs or errors.
+            headers["Authorization"] = f"Bearer {api_key}"
         self._client = httpx.AsyncClient(
-            base_url=self.base_url, timeout=timeout, transport=transport
+            base_url=self.base_url, timeout=timeout, transport=transport, headers=headers
         )
 
     async def execute(self, request: JsonObject) -> SystemOneResult:
+        payload = dict(request)
+        if not payload.get("model") and self.default_model:
+            # The effective configuration's model fills an absent request
+            # model on the FORWARD payload only — the persisted snapshot
+            # keeps the request exactly as it arrived.
+            payload["model"] = self.default_model
         try:
-            response = await self._client.post(SYSTEM_ONE_ENDPOINT, json=request)
+            response = await self._client.post(SYSTEM_ONE_ENDPOINT, json=payload)
         except httpx.TimeoutException as error:
             raise EmulatorProviderError(
                 message="The emulator did not respond within the timeout."

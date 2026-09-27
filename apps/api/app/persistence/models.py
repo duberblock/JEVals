@@ -40,3 +40,17 @@ class ExecutionRecord(Base):
     semantic_divergence: Mapped[str | None] = mapped_column(String, nullable=True)
     duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
     payload: Mapped[dict[str, Any]] = mapped_column(JSONText, nullable=False)
+
+
+class AppSettingsRow(Base):
+    """Single-row (id=1) UI settings document.
+
+    ``data`` holds the per-provider overrides as a JSON document; every
+    ``api_key`` inside it is a Fernet token (app.core.crypto) — plaintext
+    credentials never reach this table.
+    """
+
+    __tablename__ = "app_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[str] = mapped_column(Text, nullable=False)

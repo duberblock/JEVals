@@ -47,6 +47,17 @@ through environment variables (see `.env.example`):
 Anything unset is reported honestly by the API's `capabilities` endpoint —
 the UI shows unavailable sources as unavailable; nothing is invented.
 
+### Configuring providers from the app
+
+The **Settings** screen (the gear icon in the header, beside the help link)
+configures the four integrations without touching any file: endpoint,
+model and API key for the emulator, the JEV baseline, the judge and the
+independent prediction — each independently, the two LLM legs being plain
+OpenAI-compatible endpoints. Keys are stored **encrypted at rest** (Fernet;
+set `SETTINGS_ENCRYPTION_KEY` or a `settings.key` file is generated beside
+the database). Values saved here override the environment; clearing a field
+falls back to it.
+
 ### Running fully local (no cloud keys)
 
 Both provider legs can run on your machine:

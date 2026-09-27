@@ -17,7 +17,7 @@ from app.api.dependencies import (
     get_judge_provider,
     reset_provider_caches,
 )
-from app.api.routes import capabilities, executions, health, ready, validations
+from app.api.routes import capabilities, executions, health, ready, settings, validations
 from app.core.logging import configure_logging, new_trace_id
 from app.core.problems import problem_response
 from app.core.security import BasicAuthMiddleware
@@ -43,9 +43,14 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         get_independent_openai_provider,
         get_judge_provider,
     ):
-        provider = factory()
-        if provider is not None:
-            await provider.aclose()
+        # Only close what was actually BUILT: calling the factory here would
+        # lazily construct a provider (and read the settings store) just to
+        # close it — pointless work, and a crash on a database that has not
+        # run migrations.
+        if factory.cache_info().currsize > 0:
+            provider = factory()
+            if provider is not None:
+                await provider.aclose()
     reset_provider_caches()
 
 
@@ -96,6 +101,7 @@ app.include_router(health.router)
 app.include_router(ready.router)
 app.include_router(capabilities.router)
 app.include_router(executions.router)
+app.include_router(settings.router)
 app.include_router(validations.router)
 
 
