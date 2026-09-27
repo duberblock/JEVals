@@ -46,7 +46,11 @@ def put_settings(
     payload: SettingsIn,
     session: Annotated[Session, Depends(get_session)],
 ) -> dict:
-    patch = payload.model_dump(exclude_none=False)
+    # exclude_unset: a field the caller did NOT send must stay untouched —
+    # only explicit values (or explicit nulls) are patches. The model's
+    # None defaults would otherwise be indistinguishable from intentional
+    # clears and wipe unmentioned fields.
+    patch = payload.model_dump(exclude_unset=True)
     stored_patch: dict[str, dict[str, object]] = {}
     for name in store.PROVIDERS:
         provider_patch = patch.get(name)

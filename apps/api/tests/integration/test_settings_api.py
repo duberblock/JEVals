@@ -307,3 +307,18 @@ def test_structured_outputs_is_a_ui_overridable_tri_state(client, monkeypatch):
     ).json()["providers"]["independent"]
     assert view["structuredOutputs"] is False
     assert view["structuredOutputsHere"] is False
+
+
+def test_a_partial_put_never_clears_fields_it_does_not_mention(client):
+    client.put(
+        "/api/v1/settings",
+        json={"independent": {"model": "keep-me", "api_key": "keep-key"}},
+    )
+    # A body that only touches structured_outputs must leave the model and
+    # the key alone (regression: the None-default wipe).
+    view = client.put(
+        "/api/v1/settings", json={"independent": {"structured_outputs": False}}
+    ).json()["providers"]["independent"]
+    assert view["model"] == "keep-me"
+    assert view["keySet"] is True
+    assert view["structuredOutputs"] is False
