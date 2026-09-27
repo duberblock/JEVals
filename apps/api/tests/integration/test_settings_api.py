@@ -210,3 +210,19 @@ def test_an_undecryptable_stored_key_degrades_to_not_set(client, db_session):
     db_session.commit()
 
     assert client.get("/api/v1/settings").json()["providers"]["jev"]["keySet"] is False
+
+
+def test_compose_style_empty_env_strings_read_as_not_configured(client, monkeypatch):
+    # Deployment templates pass `${VAR:-}` — an empty string must behave
+    # exactly like an unset variable (the live compose exposed "" endpoints
+    # and keySet=true for empty keys).
+    monkeypatch.setenv("EMULATOR_URL", "")
+    monkeypatch.setenv("EMULATOR_API_KEY", "")
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    monkeypatch.setenv("OPENAI_MODEL", "")
+
+    providers = client.get("/api/v1/settings").json()["providers"]
+    assert providers["emulator"]["endpoint"] is None
+    assert providers["emulator"]["keySet"] is False
+    assert providers["judge"]["keySet"] is False
+    assert providers["independent"]["keySet"] is False

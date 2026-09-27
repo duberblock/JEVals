@@ -1,5 +1,7 @@
 from functools import lru_cache
+from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -45,6 +47,34 @@ class Settings(BaseSettings):
     api_port: int = 8000
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # Deployment env templates pass empty strings for unset optional
+    # variables (compose `${VAR:-}`); an empty provider field means "not
+    # configured" and must read as None everywhere downstream.
+    @field_validator(
+        "emulator_url",
+        "emulator_api_key",
+        "emulator_model",
+        "typesafe_api_key",
+        "typesafe_model",
+        "openai_api_key",
+        "openai_model",
+        "default_model",
+        "judge_api_key",
+        "judge_base_url",
+        "judge_model",
+        "independent_api_key",
+        "independent_base_url",
+        "independent_model",
+        "settings_encryption_key",
+        "settings_key_file",
+        mode="before",
+    )
+    @classmethod
+    def _empty_optional_string_is_none(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
 
 @lru_cache(maxsize=1)
