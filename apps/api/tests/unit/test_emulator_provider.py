@@ -179,7 +179,12 @@ def test_a_404_on_systemone_falls_back_to_the_classifier_protocol():
     # unconfigured deployment (paste-the-URL simplicity).
     assert classifier_body["model"] == "featherless-ai/Qwen3.6-35B-A3B-classifier"
     assert classifier_body["state"] == REQUEST["state"]
-    assert classifier_body["questions"] == REQUEST["questions"]
+    # Questions pass through EXCEPT the instructions Simple Jev requires —
+    # each question gains a name-derived default when it carries none.
+    assert classifier_body["questions"] == {
+        name: {**question, "instructions": f"Answer the question '{name}'."}
+        for name, question in REQUEST["questions"].items()
+    }
     # Extras stripped to the strict answer contract; usage mapped.
     assert result.answers["q"].model_dump() == {
         "type": "choice",
@@ -320,3 +325,42 @@ def test_an_explicit_url_verdict_is_final():
     with pytest.raises(EmulatorProviderError):
         asyncio.run(client.execute(REQUEST))
     assert len(captured) == 1
+
+
+def test_classifier_translation_injects_instructions_the_sample_omits():
+    # The canonical sample omits instructions on noul/score questions — a
+    # documented Simple Jev 422 (regression: run_d20d8a88).
+    request = {
+        "state": {"message": "I was charged twice on my invoice."},
+        "questions": {
+            "refund_requested": {
+                "type": "noul",
+                "criteria": {"true": "The customer requests a refund.", "false": "The customer does not."},
+            },
+            "request_type": {
+                "type": "choice",
+                "instructions": "Classify the request.",
+                "criteria": {"billing": "Billing issue", "technical": "Technical issue"},
+            },
+            "urgency": {"type": "score", "criteria": ["low", "medium", "high"]},
+        },
+    }
+    captured: list[httpx.Request] = []
+
+    def handler(request_: httpx.Request) -> httpx.Response:
+        captured.append(request_)
+        if request_.url.path == "/v1/systemone":
+            return httpx.Response(404, json={})
+        return httpx.Response(200, json=_classifier_reply())
+
+    asyncio.run(client_with(httpx.MockTransport(handler)).execute(request))
+
+    body = json.loads(captured[1].read())
+    assert body["questions"]["refund_requested"]["instructions"] == (
+        "Answer the question 'refund_requested'."
+    )
+    assert body["questions"]["urgency"]["instructions"] == "Answer the question 'urgency'."
+    # A question that carries its own instructions is untouched.
+    assert body["questions"]["request_type"]["instructions"] == "Classify the request."
+    # The caller's request is never mutated.
+    assert "instructions" not in request["questions"]["refund_requested"]

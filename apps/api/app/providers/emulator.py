@@ -35,6 +35,21 @@ def _classifier_payload(request: JsonObject, default_model: str | None) -> JsonO
         raise EmulatorProviderError(
             message="The emulator request needs 'state' and 'questions'."
         )
+    # Simple Jev REQUIRES `instructions` on every question; the SystemOne
+    # contract allows omitting them (the canonical sample does for its noul
+    # and score questions). A default derived from the question's name
+    # fills the gap without touching the caller's request.
+    questions: JsonObject = {}
+    raw_questions = request["questions"]
+    if isinstance(raw_questions, dict):
+        for name, question in raw_questions.items():
+            if isinstance(question, dict):
+                copied = dict(question)
+                if not copied.get("instructions"):
+                    copied["instructions"] = f"Answer the question '{name}'."
+                questions[name] = copied
+            else:
+                questions[name] = question
     return {
         "model": (
             request["model"]
@@ -42,7 +57,7 @@ def _classifier_payload(request: JsonObject, default_model: str | None) -> JsonO
             else (default_model or DEFAULT_CLASSIFIER_MODEL)
         ),
         "state": request["state"],
-        "questions": request["questions"],
+        "questions": questions,
     }
 
 
