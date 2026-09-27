@@ -716,7 +716,7 @@ export const en = {
     help: {
       emulator:
         'Works out of the box — the default endpoint is already set. The model only matters for Simple Jev endpoints (example: featherless-ai/Qwen3.6-35B-A3B-classifier — empty uses that default). The API key only if your endpoint requires auth. Service documentation: Simple Jev — https://simple-jev.featherless.ai/skills.md · hosted SystemOne — https://jevs-jimmy.blockito.cloud/SKILL.md.',
-      jev: 'Expected endpoint: https://jevs-jimmy.blockito.cloud/v1/systemone — the hosted JEV service; paste the full URL. Other SystemOne services (…/v1/systemone), Simple Jev endpoints (…/v1/classifier), or a bare base also work. Expected model: jev-latest (optional — empty uses it by default on systemone; the classifier model on Simple Jev). API key required — any non-empty value when the endpoint has no auth. Service documentation: https://jevs-jimmy.blockito.cloud/SKILL.md · typesafe.ai skill — https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md.',
+      jev: 'Expected endpoint: https://api.typesafe.ai — the typesafe.ai JEV service; the bare base or the full URL (…/v1/systemone) both work. Other SystemOne services (e.g. https://jevs-jimmy.blockito.cloud/v1/systemone) or Simple Jev endpoints (…/v1/classifier) also work. Expected model: jev-latest (optional — empty uses it by default on systemone; the classifier model on Simple Jev). API key required — any non-empty value when the endpoint has no auth. Documentation: https://jevs-jimmy.blockito.cloud/SKILL.md · typesafe.ai skill — https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md.',
       judge: 'Expected endpoint: https://api.openai.com/v1 — or any OpenAI-compatible chat-completions endpoint. Expected model: gpt-5-nano (or any model your endpoint serves). Endpoint, model and API key are all three required.',
       independent: 'Expected endpoint: https://api.openai.com/v1 · Expected model: gpt-5-nano — or press "Copy Judge configuration" to inherit the Judge\u2019s. For GLM-style endpoints uncheck "Native structured outputs" so the questions travel in the prompt.'
     },
@@ -729,7 +729,7 @@ export const en = {
       },
       jev: {
         name: 'JEV baseline',
-        description: 'The typesafe.ai baseline the emulator is compared against — ideally the hosted JEV service.'
+        description: 'The typesafe.ai baseline the emulator is compared against — ideally the typesafe.ai JEV service.'
       },
       judge: {
         name: 'Judge',

@@ -695,7 +695,7 @@ export const es = {
     help: {
       emulator:
         'Funciona sin configurar — el endpoint predeterminado ya viene puesto. El modelo solo importa para endpoints de Simple Jev (ejemplo: featherless-ai/Qwen3.6-35B-A3B-classifier — vacío usa ese default). La API key solo si tu endpoint exige autenticación. Documentación de los servicios: Simple Jev — https://simple-jev.featherless.ai/skills.md · SystemOne hospedado — https://jevs-jimmy.blockito.cloud/SKILL.md.',
-      jev: 'Endpoint esperado: https://jevs-jimmy.blockito.cloud/v1/systemone — el servicio JEV hospedado; pega el URL completo. También sirven otros servicios SystemOne (…/v1/systemone), endpoints de Simple Jev (…/v1/classifier) o una base sin path. Modelo esperado: jev-latest (opcional — vacío lo usa por defecto en systemone; el modelo del classifier en Simple Jev). API key obligatoria — cualquier valor no vacío si el endpoint no exige autenticación. Documentación del servicio: https://jevs-jimmy.blockito.cloud/SKILL.md · Skill de typesafe.ai — https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md.',
+      jev: 'Endpoint esperado: https://api.typesafe.ai — el servicio JEV de typesafe.ai; sirve la base sin path o el URL completo (…/v1/systemone). También sirven otros servicios SystemOne (p. ej. https://jevs-jimmy.blockito.cloud/v1/systemone) o endpoints de Simple Jev (…/v1/classifier). Modelo esperado: jev-latest (opcional — vacío lo usa por defecto en systemone; el modelo del classifier en Simple Jev). API key obligatoria — cualquier valor no vacío si el endpoint no exige autenticación. Documentación: https://jevs-jimmy.blockito.cloud/SKILL.md · Skill de typesafe.ai — https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md.',
       judge: 'Endpoint esperado: https://api.openai.com/v1 — o cualquier endpoint OpenAI-compatible de chat completions. Modelo esperado: gpt-5-nano (u otro modelo que sirva tu endpoint). Endpoint, modelo y API key son los tres obligatorios.',
       independent: 'Endpoint esperado: https://api.openai.com/v1 · Modelo esperado: gpt-5-nano — o oprime "Copiar configuración del Judge" para heredar los del Judge. Para endpoints tipo GLM desmarca "Salidas estructuradas nativas" para que las preguntas viajen en el prompt.'
     },
@@ -708,7 +708,7 @@ export const es = {
       },
       jev: {
         name: 'Baseline JEV',
-        description: 'El baseline typesafe.ai contra el que se compara el emulador — idealmente el servicio JEV hospedado.'
+        description: 'El baseline typesafe.ai contra el que se compara el emulador — idealmente el servicio JEV de typesafe.ai.'
       },
       judge: {
         name: 'Judge',

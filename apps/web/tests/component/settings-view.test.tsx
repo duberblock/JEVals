@@ -235,7 +235,7 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   expect((judge.getByLabelText('Model', { exact: false }) as HTMLInputElement).placeholder).toBe('gpt-5-nano')
   expect((judge.getByLabelText('Endpoint') as HTMLInputElement).placeholder).toBe('https://api.openai.com/v1')
   expect((within(screen.getByTestId('settings-card-jev')).getByLabelText('Model') as HTMLInputElement).placeholder).toBe('jev-latest')
-  expect((within(screen.getByTestId('settings-card-jev')).getByLabelText('Endpoint') as HTMLInputElement).placeholder).toBe('https://jevs-jimmy.blockito.cloud/v1/systemone')
+  expect((within(screen.getByTestId('settings-card-jev')).getByLabelText('Endpoint') as HTMLInputElement).placeholder).toBe('https://api.typesafe.ai')
 
   // One click copies the judge configuration server-side — and the boxes
   // SHOW it: the card reinitializes from the copy response (the copied

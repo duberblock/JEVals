@@ -55,7 +55,7 @@ const MODEL_HINTS: Record<ProviderName, string> = {
 // field is empty — the same values the collapsible guide spells out.
 const ENDPOINT_HINTS: Record<ProviderName, string> = {
   emulator: 'https://jevs-jimmy.blockito.cloud/v1/systemone',
-  jev: 'https://jevs-jimmy.blockito.cloud/v1/systemone',
+  jev: 'https://api.typesafe.ai',
   judge: 'https://api.openai.com/v1',
   independent: 'https://api.openai.com/v1',
 }
