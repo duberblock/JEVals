@@ -213,7 +213,7 @@ def test_a_full_systemone_url_posts_verbatim():
     assert len(captured) == 1
     assert str(captured[0].url) == "https://jevs.example/v1/systemone"
     # The wire body still resolves the model (required on the wire).
-    assert json.loads(captured[0].read())["model"] == client.model
+    assert json.loads(captured[0].read())["model"] == "jev-latest"
 
 
 def test_a_full_classifier_url_speaks_the_simple_jev_contract():
@@ -252,9 +252,10 @@ def test_a_full_classifier_url_speaks_the_simple_jev_contract():
     assert len(captured) == 1
     assert str(captured[0].url) == "https://simple-jev.example/v1/classifier"
     body = json.loads(captured[0].read())
-    # The client's resolved model feeds the REQUIRED classifier model, and
-    # the missing instructions gain their name-derived default.
-    assert body["model"] == client.model
+    # An UNCONFIGURED model resolves PER PROTOCOL — the classifier default,
+    # never jev-latest (which the classifier API rejects) — and the missing
+    # instructions gain their name-derived default.
+    assert body["model"] == "featherless-ai/Qwen3.6-35B-A3B-classifier"
     assert body["questions"]["q"]["instructions"] == "Answer the question 'q'."
     assert result.answers["q"].choice == "yes"
     assert result.usage.input_tokens == 7

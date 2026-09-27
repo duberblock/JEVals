@@ -48,7 +48,7 @@ class JevClient:
         *,
         api_key: str,
         timeout: float = JEV_TIMEOUT_SECONDS,
-        model: str = DEFAULT_JEV_MODEL,
+        model: str | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
@@ -78,9 +78,10 @@ class JevClient:
         # override is forwarded untouched. All other request properties are
         # forwarded as-is, exactly as the SDK forwards them.
         if self._classifier_mode:
-            # Simple Jev REQUIRES a model; this client always resolves one
-            # (its own default when nothing is configured) — a strictly
-            # better default position than the emulator's.
+            # Simple Jev REQUIRES a model — and a model nobody configured
+            # resolves PER PROTOCOL: an explicit configuration travels
+            # untouched, else the shared classifier default (NOT jev-latest,
+            # which is not a classifier model and the API rejects).
             try:
                 payload = _classifier_payload(request, self.model)
             except ValueError as error:
@@ -88,7 +89,7 @@ class JevClient:
         else:
             payload = dict(request)
             if not payload.get("model"):
-                payload["model"] = self.model
+                payload["model"] = self.model or DEFAULT_JEV_MODEL
         try:
             response = await self._client.post(self._target, json=payload)
         except httpx.TimeoutException as error:

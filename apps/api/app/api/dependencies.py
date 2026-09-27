@@ -80,7 +80,7 @@ def get_jev_provider() -> JevProvider | None:
     return JevClient(
         base_url=config.endpoint or "https://api.typesafe.ai",
         api_key=config.api_key,
-        model=config.model or "jev-latest",
+        model=config.model,
     )
 
 
