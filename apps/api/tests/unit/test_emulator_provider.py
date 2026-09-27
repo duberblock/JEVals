@@ -259,3 +259,60 @@ def test_a_classifier_shaped_body_on_the_systemone_path_still_parses():
     result = asyncio.run(client_with(httpx.MockTransport(handler)).execute(REQUEST))
     assert result.model == "featherless-ai/Qwen3.6-35B-A3B-classifier"
     assert result.usage.input_tokens == 42
+
+
+# --- Explicit full endpoint URLs -------------------------------------------------
+
+
+def test_a_full_systemone_url_posts_verbatim_with_no_probing():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(200, json=EMULATOR_RESULT)
+
+    client = EmulatorClient(
+        base_url="https://jevs.example/v1/systemone",
+        transport=httpx.MockTransport(handler),
+    )
+    result = asyncio.run(client.execute(REQUEST))
+
+    assert len(captured) == 1
+    assert str(captured[0].url) == "https://jevs.example/v1/systemone"
+    assert result.model == EMULATOR_RESULT["model"]
+
+
+def test_a_full_classifier_url_posts_verbatim_with_the_translated_payload():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(200, json=_classifier_reply())
+
+    client = EmulatorClient(
+        base_url="https://simple-jev.example/v1/classifier",
+        transport=httpx.MockTransport(handler),
+    )
+    result = asyncio.run(client.execute(REQUEST))
+
+    assert len(captured) == 1
+    assert str(captured[0].url) == "https://simple-jev.example/v1/classifier"
+    body = json.loads(captured[0].read())
+    assert body["model"] == "featherless-ai/Qwen3.6-35B-A3B-classifier"
+    assert result.answers["q"].choice == "yes"
+
+
+def test_an_explicit_url_verdict_is_final():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(401, json={})
+
+    client = EmulatorClient(
+        base_url="https://jevs.example/v1/systemone",
+        transport=httpx.MockTransport(handler),
+    )
+    with pytest.raises(EmulatorProviderError):
+        asyncio.run(client.execute(REQUEST))
+    assert len(captured) == 1

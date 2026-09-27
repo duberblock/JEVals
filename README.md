@@ -62,20 +62,17 @@ falls back to it.
 
 Both provider legs can run on your machine:
 
-- **Emulator — [Simple Jev](https://simple-jev.featherless.ai/)**, an
-  open-source structured-decision classifier (agent-facing docs:
-  [skills.md](https://simple-jev.featherless.ai/skills.md)). It shares the
-  same question taxonomy (choice / score / noul over a state context), and
-  the API detects the protocol automatically: paste
-  `https://simple-jev-demo-api.featherless.ai` into the emulator card —
-  or just press **Use the public demo** — and it works with no key
-  (demo limits: 2k tokens of context, 2 req/s). For production limits get
-  a key at featherless.ai and put `https://api.featherless.ai` in the card
-  with it.
-
-  Running your own deployment? Point the card at any service implementing
-  `POST /v1/systemone`, or keep `scripts/local_emulator.py` as a standalone
-  adapter for a private classifier instance.
+- **Emulator** — paste the **full endpoint URL** into the card:
+  `…/v1/systemone` for any SystemOne service, or `…/v1/classifier` for a
+  [Simple Jev](https://simple-jev.featherless.ai/) deployment (the
+  open-source structured-decision classifier; agent-facing docs:
+  [skills.md](https://simple-jev.featherless.ai/skills.md) — same
+  choice/score/noul taxonomy). The URL IS the protocol choice — the API
+  posts exactly what you paste. The **Use the public demo** button fills
+  `https://simple-jev-demo-api.featherless.ai/v1/classifier`, which works
+  with no key (demo limits: 2k tokens of context, 2 req/s); for production
+  limits get a key at featherless.ai and use
+  `https://api.featherless.ai/v1/classifier` with it.
 
 - **Judge + independent — [Ollama](https://ollama.com)** (or any local
   OpenAI-compatible server):

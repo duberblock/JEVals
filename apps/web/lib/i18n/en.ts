@@ -703,8 +703,8 @@ export const en = {
     providers: {
       emulator: {
         name: 'Emulator',
-        description: 'Any service implementing POST /v1/systemone, or a Simple Jev classifier URL (auto-detected). The free public demo works with no key.',
-        demoEndpoint: 'https://simple-jev-demo-api.featherless.ai',
+        description: 'Paste the FULL endpoint URL — …/v1/systemone (any SystemOne service) or …/v1/classifier (Simple Jev). The free public demo works with no key.',
+        demoEndpoint: 'https://simple-jev-demo-api.featherless.ai/v1/classifier',
         useDemo: 'Use the public demo'
       },
       jev: {
