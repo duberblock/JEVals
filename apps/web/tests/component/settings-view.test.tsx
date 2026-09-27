@@ -191,10 +191,17 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
     const url = String(input)
     if (url.endsWith('/copy-judge') && init?.method === 'POST') {
       posts.push({ url })
+      // The server's answer: independent now carries the judge's values.
+      const copied = JSON.parse(JSON.stringify(VIEW))
+      copied.independent = {
+        ...copied.judge,
+        keySet: true,
+        configuredHere: { endpoint: true, model: true, apiKey: true },
+      }
       return {
         ok: true,
         status: 200,
-        json: async () => ({ providers: VIEW }),
+        json: async () => ({ providers: copied }),
       } as Response
     }
     if (init?.method === 'PUT') {
@@ -227,15 +234,21 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   expect((judge.getByLabelText('Model', { exact: false }) as HTMLInputElement).placeholder).toBe('gpt-5-nano')
   expect((within(screen.getByTestId('settings-card-jev')).getByLabelText('Model') as HTMLInputElement).placeholder).toBe('jev-latest')
 
-  // One click copies the judge configuration server-side.
+  // One click copies the judge configuration server-side — and the boxes
+  // SHOW it: the card reinitializes from the copy response (the copied
+  // status text lives in the pre-copy instance; the visible contract is
+  // the filled inputs).
   const independent = within(screen.getByTestId('settings-card-independent'))
   fireEvent.click(independent.getByRole('button', { name: 'Copy Judge configuration' }))
-  await waitFor(() =>
-    expect(independent.getByTestId('settings-independent-status')).toHaveTextContent(
-      'Judge configuration copied'
-    )
-  )
   expect(posts.some((p) => p.url.endsWith('/copy-judge'))).toBe(true)
+  await waitFor(() => {
+    const refreshed = within(screen.getByTestId('settings-card-independent'))
+    expect((refreshed.getByLabelText('Model', { exact: false }) as HTMLInputElement).value).toBe('gpt-4o-mini')
+  })
+  const refreshed = within(screen.getByTestId('settings-card-independent'))
+  expect((refreshed.getByLabelText('Endpoint') as HTMLInputElement).value).toBe('https://api.openai.com/v1')
+  // The key placeholder reflects the copied key being set.
+  expect((refreshed.getByLabelText('API key', { exact: false }) as HTMLInputElement).placeholder).toBe('••••••••')
 })
 
 it('the structured-outputs toggle rides the independent card and saves with it', async () => {

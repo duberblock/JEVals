@@ -64,11 +64,13 @@ function ProviderCard({
   view,
   dictionary,
   demo,
+  onJudgeCopied,
 }: {
   name: ProviderName
   view: ProviderView
   dictionary: Dictionary['settings']
   demo?: { url: string; label: string }
+  onJudgeCopied?: (data: SettingsResponse) => void
 }) {
   const required = REQUIRED[name]
   const [endpoint, setEndpoint] = useState(view.endpoint ?? '')
@@ -84,6 +86,9 @@ function ProviderCard({
     try {
       const response = await fetch('/api/v1/settings/copy-judge', { method: 'POST' })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      // The server moved the values — the boxes must SHOW them: hand the
+      // fresh view up so the cards reinitialize from what now IS.
+      onJudgeCopied?.((await response.json()) as SettingsResponse)
       setCopied('done')
     } catch {
       setCopied('error')
@@ -296,6 +301,9 @@ export function SettingsView() {
   const { dictionary } = useDictionary()
   const [settings, setSettings] = useState<SettingsResponse | null>(null)
   const [failed, setFailed] = useState(false)
+  // Bumped after a server-side copy so the cards REMOUNT with the fresh
+  // view — their inputs are mount-time state and would otherwise stay stale.
+  const [refreshTick, setRefreshTick] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -337,8 +345,16 @@ export function SettingsView() {
                     }
                   : undefined
               }
-              key={name}
+              key={`${name}-${refreshTick}`}
               name={name}
+              onJudgeCopied={
+                name === 'independent'
+                  ? (data) => {
+                      setSettings(data)
+                      setRefreshTick((tick) => tick + 1)
+                    }
+                  : undefined
+              }
               view={settings.providers[name]}
             />
           ))
