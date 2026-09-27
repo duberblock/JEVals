@@ -9,6 +9,70 @@ from app.schemas.system_one_result import SystemOneResult
 
 EMULATOR_TIMEOUT_SECONDS = 60.0
 SYSTEM_ONE_ENDPOINT = "/v1/systemone"
+CLASSIFIER_ENDPOINT = "/v1/classifier"
+
+# When the endpoint turns out to speak the Simple Jev classifier protocol
+# (https://simple-jev.featherless.ai/ — an open-source structured-decision
+# classifier sharing the same choice/score/noul question taxonomy), a model
+# is REQUIRED; this default serves the pasted-demo-URL case with zero
+# configuration.
+DEFAULT_CLASSIFIER_MODEL = "featherless-ai/Qwen3.6-35B-A3B-classifier"
+
+# The SystemOneResult contract forbids extras per answer, so classifier
+# answers are reduced to exactly the keys each type allows.
+_CLASSIFIER_ANSWER_KEYS = {
+    "noul": {"type", "noul"},
+    "choice": {"type", "choice", "confidence", "probabilities"},
+    "score": {"type", "score", "confidence", "legend", "probabilities"},
+}
+
+
+def _classifier_payload(request: JsonObject, default_model: str | None) -> JsonObject:
+    """Map a SystemOneRequest onto the Simple Jev classifier request."""
+    if "state" not in request or "questions" not in request:
+        raise EmulatorProviderError(
+            message="The emulator request needs 'state' and 'questions'."
+        )
+    return {
+        "model": (
+            request["model"]
+            if isinstance(request.get("model"), str) and request["model"]
+            else (default_model or DEFAULT_CLASSIFIER_MODEL)
+        ),
+        "state": request["state"],
+        "questions": request["questions"],
+    }
+
+
+def _result_from_classifier(data: object) -> SystemOneResult:
+    """Map the classifier response onto the SystemOneResult contract."""
+    if not isinstance(data, dict):
+        raise EmulatorProviderError(message="The emulator returned an unparsable result.")
+    answers_raw = data.get("answers")
+    if not isinstance(answers_raw, dict) or not answers_raw:
+        raise EmulatorProviderError(message="The emulator returned an unparsable result.")
+    answers: dict[str, JsonObject] = {}
+    for name, answer in answers_raw.items():
+        if not isinstance(answer, dict):
+            raise EmulatorProviderError(message="The emulator returned an unparsable result.")
+        answer_type = answer.get("type")
+        allowed = _CLASSIFIER_ANSWER_KEYS.get(answer_type) if isinstance(answer_type, str) else None
+        if allowed is None or not allowed.issubset(answer):
+            raise EmulatorProviderError(message="The emulator returned an unparsable result.")
+        answers[name] = {key: answer[key] for key in allowed}
+    usage_raw = data.get("usage")
+    usage = usage_raw if isinstance(usage_raw, dict) else {}
+    model = data.get("model")
+    return SystemOneResult.model_validate(
+        {
+            "model": model if isinstance(model, str) and model else DEFAULT_CLASSIFIER_MODEL,
+            "answers": answers,
+            "usage": {
+                "input_tokens": usage.get("input_tokens", 0) or 0,
+                "output_tokens": usage.get("output_tokens", 0) or 0,
+            },
+        }
+    )
 
 
 class EmulatorClient:
@@ -64,6 +128,32 @@ class EmulatorClient:
             ) from error
         except httpx.HTTPError as error:
             raise EmulatorProviderError(message="The emulator could not be reached.") from error
+
+        # A 404 means THIS ENDPOINT has no systemone route: it may be a
+        # Simple Jev classifier deployment instead (paste-the-URL simplicity
+        # — no adapter, no protocol ceremony). One translation hop; any
+        # other verdict (success, auth, rate limit…) is final.
+        if response.status_code == 404:
+            try:
+                classifier_response = await self._client.post(
+                    CLASSIFIER_ENDPOINT,
+                    json=_classifier_payload(request, self.default_model),
+                )
+            except httpx.TimeoutException as error:
+                raise EmulatorProviderError(
+                    message="The emulator did not respond within the timeout."
+                ) from error
+            except httpx.HTTPError as error:
+                raise EmulatorProviderError(
+                    message="The emulator could not be reached."
+                ) from error
+            if not classifier_response.is_success:
+                raise EmulatorProviderError(
+                    message=f"The emulator returned HTTP {classifier_response.status_code}.",
+                    status=classifier_response.status_code,
+                )
+            return _result_from_classifier(classifier_response.json())
+
         if not response.is_success:
             raise EmulatorProviderError(
                 message=f"The emulator returned HTTP {response.status_code}.",

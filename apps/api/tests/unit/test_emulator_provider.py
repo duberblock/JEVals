@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import httpx
 import pytest
@@ -135,3 +136,97 @@ def test_get_emulator_provider_builds_client_from_environment(tmp_path, monkeypa
 
     assert isinstance(provider, EmulatorClient)
     assert provider.base_url == "https://emulator.example"
+
+
+# --- Simple Jev classifier fallback ---------------------------------------------
+
+
+def _classifier_reply() -> dict:
+    return {
+        "model": "featherless-ai/Qwen3.6-35B-A3B-classifier",
+        "answers": {
+            "q": {
+                "type": "choice",
+                "choice": "yes",
+                "confidence": 0.91,
+                "probabilities": {"yes": 0.91, "no": 0.09},
+                "extra_upstream_field": "stripped",
+            }
+        },
+        "usage": {"input_tokens": 42, "output_tokens": 1},
+    }
+
+
+def test_a_404_on_systemone_falls_back_to_the_classifier_protocol():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        if request.url.path == "/v1/systemone":
+            return httpx.Response(404, json={"error": "not found"})
+        return httpx.Response(200, json=_classifier_reply())
+
+    result = asyncio.run(client_with(httpx.MockTransport(handler)).execute(REQUEST))
+
+    assert len(captured) == 2
+    classifier_body = json.loads(captured[1].read())
+    assert str(captured[1].url).endswith("/v1/classifier")
+    # The classifier contract REQUIRES a model — the default fills an
+    # unconfigured deployment (paste-the-URL simplicity).
+    assert classifier_body["model"] == "featherless-ai/Qwen3.6-35B-A3B-classifier"
+    assert classifier_body["state"] == REQUEST["state"]
+    assert classifier_body["questions"] == REQUEST["questions"]
+    # Extras stripped to the strict answer contract; usage mapped.
+    assert result.answers["q"].model_dump() == {
+        "type": "choice",
+        "choice": "yes",
+        "confidence": pytest.approx(0.91),
+        "probabilities": {"yes": pytest.approx(0.91), "no": pytest.approx(0.09)},
+    }
+    assert result.usage.input_tokens == 42
+    assert result.usage.output_tokens == 1
+
+
+def test_a_configured_model_wins_as_the_classifier_default():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        if request.url.path == "/v1/systemone":
+            return httpx.Response(404, json={})
+        return httpx.Response(200, json=_classifier_reply())
+
+    client = EmulatorClient(
+        base_url="https://emulator.test",
+        default_model="featherless-ai/Qwen3.8-27B-classifier",
+        transport=httpx.MockTransport(handler),
+    )
+    asyncio.run(client.execute(REQUEST))
+
+    assert json.loads(captured[1].read())["model"] == "featherless-ai/Qwen3.8-27B-classifier"
+
+
+def test_classifier_rejection_surfaces_honestly_and_non_404_never_falls_back():
+    captured: list[httpx.Request] = []
+
+    def both_reject(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        if request.url.path == "/v1/systemone":
+            return httpx.Response(404, json={})
+        return httpx.Response(400, json={"error": {"message": "bad model"}})
+
+    with pytest.raises(EmulatorProviderError) as excinfo:
+        asyncio.run(client_with(httpx.MockTransport(both_reject)).execute(REQUEST))
+    assert len(captured) == 2
+    assert "HTTP 400" in str(excinfo.value)
+
+    # A non-404 verdict on the systemone route is final — no probing.
+    captured.clear()
+
+    def unauthorized(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(401, json={})
+
+    with pytest.raises(EmulatorProviderError):
+        asyncio.run(client_with(httpx.MockTransport(unauthorized)).execute(REQUEST))
+    assert len(captured) == 1

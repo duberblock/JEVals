@@ -66,18 +66,16 @@ Both provider legs can run on your machine:
   open-source structured-decision classifier (agent-facing docs:
   [skills.md](https://simple-jev.featherless.ai/skills.md)). It shares the
   same question taxonomy (choice / score / noul over a state context), and
-  the repo ships a tiny stdlib-only adapter that speaks the emulator
-  contract and forwards to its classifier API:
+  the API detects the protocol automatically: paste
+  `https://simple-jev-demo-api.featherless.ai` into the emulator card —
+  or just press **Use the public demo** — and it works with no key
+  (demo limits: 2k tokens of context, 2 req/s). For production limits get
+  a key at featherless.ai and put `https://api.featherless.ai` in the card
+  with it.
 
-  ```sh
-  python3 scripts/local_emulator.py --port 8100
-  # then set EMULATOR_URL=http://localhost:8100
-  ```
-
-  The adapter defaults to the public demo endpoint — no key needed, limited
-  to 2k tokens of context and 2 req/s (fine for trying the app, not for
-  load). For production limits get a key at featherless.ai and run
-  `FEATHERLESS_API_KEY=… python3 scripts/local_emulator.py --base https://api.featherless.ai`.
+  Running your own deployment? Point the card at any service implementing
+  `POST /v1/systemone`, or keep `scripts/local_emulator.py` as a standalone
+  adapter for a private classifier instance.
 
 - **Judge + independent — [Ollama](https://ollama.com)** (or any local
   OpenAI-compatible server):

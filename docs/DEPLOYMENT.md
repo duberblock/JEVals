@@ -81,10 +81,12 @@ Availability is always reported honestly: the `capabilities` endpoint lists
 which sources can run, and the UI renders unavailable sources as
 unavailable.
 
-Both provider legs can also run fully local — the emulator via the shipped
-Simple Jev adapter (`scripts/local_emulator.py`) and the judge/independent
-legs via Ollama or any local OpenAI-compatible server; see the README's
-"Running fully local" section.
+Both provider legs can also run without any private infrastructure — the
+emulator accepts a Simple Jev classifier URL directly (the public demo
+needs no key; the API auto-detects the protocol) and the judge/independent
+legs accept Ollama or any local OpenAI-compatible server; see the README's
+"Running fully local" section. `scripts/local_emulator.py` remains as an
+optional standalone adapter for private classifier deployments.
 
 ## 4. Verifying a deployment
 

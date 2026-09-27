@@ -38,10 +38,12 @@ function ProviderCard({
   name,
   view,
   dictionary,
+  demo,
 }: {
   name: ProviderName
   view: ProviderView
   dictionary: Dictionary['settings']
+  demo?: { url: string; label: string }
 }) {
   const [endpoint, setEndpoint] = useState(view.endpoint ?? '')
   const [model, setModel] = useState(view.model ?? '')
@@ -50,16 +52,17 @@ function ProviderCard({
   const [cleared, setCleared] = useState(false)
   const labels = dictionary.providers[name]
 
-  async function save(clearKey: boolean) {
+  async function save(clearKey: boolean, endpointOverride?: string) {
     setState('saving')
     setCleared(clearKey)
+    const endpointValue = endpointOverride ?? endpoint
     try {
       const response = await fetch('/api/v1/settings', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           [name]: {
-            endpoint: endpoint || null,
+            endpoint: endpointValue || null,
             model: model || null,
             ...(clearKey ? { api_key: null } : apiKey ? { api_key: apiKey } : {}),
           },
@@ -94,6 +97,7 @@ function ProviderCard({
             className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm"
             id={`settings-${name}-endpoint`}
             onChange={(event) => setEndpoint(event.target.value)}
+            placeholder={demo?.url ?? ''}
             type="text"
             value={endpoint}
           />
@@ -129,6 +133,19 @@ function ProviderCard({
         <Button disabled={state === 'saving'} onClick={() => void save(false)} type="button">
           {state === 'saving' ? dictionary.saving : dictionary.save}
         </Button>
+        {demo ? (
+          <Button
+            disabled={state === 'saving'}
+            onClick={() => {
+              setEndpoint(demo.url)
+              void save(false, demo.url)
+            }}
+            type="button"
+            variant="outline"
+          >
+            {demo.label}
+          </Button>
+        ) : null}
         {view.configuredHere.apiKey ? (
           <Button
             disabled={state === 'saving'}
@@ -193,6 +210,14 @@ export function SettingsView() {
           PROVIDER_ORDER.map((name) => (
             <ProviderCard
               dictionary={dictionary.settings}
+              demo={
+                name === 'emulator'
+                  ? {
+                      url: dictionary.settings.providers.emulator.demoEndpoint,
+                      label: dictionary.settings.providers.emulator.useDemo,
+                    }
+                  : undefined
+              }
               key={name}
               name={name}
               view={settings.providers[name]}

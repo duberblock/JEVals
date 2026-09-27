@@ -155,3 +155,25 @@ describe('SettingsView', () => {
     expect(es.settings.providers.emulator.name).toBe('Emulador')
   })
 })
+
+it('the one-click public demo fills and saves the emulator endpoint', async () => {
+  const { puts } = stubFetch()
+
+  render(<SettingsView />)
+  await screen.findByTestId('settings-card-emulator')
+
+  // The empty endpoint box SHOWS the full demo URL as its placeholder.
+  const endpointInput = within(screen.getByTestId('settings-card-emulator')).getByLabelText('Endpoint') as HTMLInputElement
+  expect(endpointInput.placeholder).toBe('https://simple-jev-demo-api.featherless.ai')
+
+  fireEvent.click(screen.getByRole('button', { name: 'Use the public demo' }))
+
+  await waitFor(() => expect(puts).toHaveLength(1))
+  expect(puts[0]).toEqual({
+    emulator: { endpoint: 'https://simple-jev-demo-api.featherless.ai', model: null },
+  })
+  expect(endpointInput.value).toBe('https://simple-jev-demo-api.featherless.ai')
+  await waitFor(() =>
+    expect(screen.getByTestId('settings-emulator-status')).toHaveTextContent('Saved')
+  )
+})
