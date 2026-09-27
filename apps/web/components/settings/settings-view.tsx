@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useState } from 'react'
 
+import { CircleHelp } from 'lucide-react'
+
 import { Button } from '../ui/button'
 import type { Dictionary } from '../../lib/i18n'
 import { useDictionary } from '../../lib/i18n/use-locale'
@@ -255,6 +257,7 @@ function CardHelp({ dictionary, name }: { dictionary: Dictionary['settings']; na
         type="button"
         variant="ghost"
       >
+        <CircleHelp aria-hidden="true" className="size-4" size={16} />
         {dictionary.helpOpen}
       </Button>
       {open ? (

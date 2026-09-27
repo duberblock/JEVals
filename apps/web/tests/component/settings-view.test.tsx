@@ -214,6 +214,8 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   expect(helps).toHaveLength(4)
   for (const trigger of helps) {
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    // The ? icon rides the trigger; aria-hidden keeps the name clean.
+    expect(trigger.querySelector('svg')).toBeInTheDocument()
   }
   fireEvent.click(within(screen.getByTestId('settings-card-emulator')).getByRole('button', { name: 'View guide' }))
   expect(screen.getByText(/default endpoint is already set/i)).toBeInTheDocument()
