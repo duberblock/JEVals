@@ -7,60 +7,19 @@ from pydantic import ValidationError
 
 from app.domain.executions.emulator import EmulatorProviderError
 from app.domain.executions.models import JsonObject
+from app.providers.simple_jev import (
+    DEFAULT_CLASSIFIER_MODEL,
+    classifier_payload as _classifier_payload,
+    result_from_classifier as _result_from_classifier,
+)
 from app.schemas.system_one_result import SystemOneResult
 
 EMULATOR_TIMEOUT_SECONDS = 60.0
 SYSTEM_ONE_ENDPOINT = "/v1/systemone"
 CLASSIFIER_ENDPOINT = "/v1/classifier"
 
-# When the endpoint turns out to speak the Simple Jev classifier protocol
-# (https://simple-jev.featherless.ai/ — an open-source structured-decision
-# classifier sharing the same choice/score/noul question taxonomy), a model
-# is REQUIRED; this default serves the pasted-demo-URL case with zero
-# configuration.
-DEFAULT_CLASSIFIER_MODEL = "featherless-ai/Qwen3.6-35B-A3B-classifier"
-
-# The SystemOneResult contract forbids extras per answer, so classifier
-# answers are reduced to exactly the keys each type allows.
-_CLASSIFIER_ANSWER_KEYS = {
-    "noul": {"type", "noul"},
-    "choice": {"type", "choice", "confidence", "probabilities"},
-    "score": {"type", "score", "confidence", "legend", "probabilities"},
-}
-
-
-def _classifier_payload(request: JsonObject, default_model: str | None) -> JsonObject:
-    """Map a SystemOneRequest onto the Simple Jev classifier request."""
-    if "state" not in request or "questions" not in request:
-        raise EmulatorProviderError(
-            message="The emulator request needs 'state' and 'questions'."
-        )
-    # Simple Jev REQUIRES `instructions` on every question; the SystemOne
-    # contract allows omitting them (the canonical sample does for its noul
-    # and score questions). A default derived from the question's name
-    # fills the gap without touching the caller's request.
-    questions: JsonObject = {}
-    raw_questions = request["questions"]
-    if isinstance(raw_questions, dict):
-        for name, question in raw_questions.items():
-            if isinstance(question, dict):
-                copied = dict(question)
-                if not copied.get("instructions"):
-                    copied["instructions"] = f"Answer the question '{name}'."
-                questions[name] = copied
-            else:
-                questions[name] = question
-    return {
-        "model": (
-            request["model"]
-            if isinstance(request.get("model"), str) and request["model"]
-            else (default_model or DEFAULT_CLASSIFIER_MODEL)
-        ),
-        "state": request["state"],
-        "questions": questions,
-    }
-
-
+# The Simple Jev classifier translation is SHARED with the JEV client
+# (app.providers.simple_jev) — both boxes accept both protocols.
 def _parse_result(body: object) -> SystemOneResult:
     """Parse either contract: a strict SystemOneResult first, the Simple Jev
     classifier mapping second — gateways may serve either shape on either
@@ -70,37 +29,6 @@ def _parse_result(body: object) -> SystemOneResult:
         return SystemOneResult.model_validate(body)
     except (ValidationError, ValueError):
         return _result_from_classifier(body)
-
-
-def _result_from_classifier(data: object) -> SystemOneResult:
-    """Map the classifier response onto the SystemOneResult contract."""
-    if not isinstance(data, dict):
-        raise EmulatorProviderError(message="The emulator returned an unparsable result.")
-    answers_raw = data.get("answers")
-    if not isinstance(answers_raw, dict) or not answers_raw:
-        raise EmulatorProviderError(message="The emulator returned an unparsable result.")
-    answers: dict[str, JsonObject] = {}
-    for name, answer in answers_raw.items():
-        if not isinstance(answer, dict):
-            raise EmulatorProviderError(message="The emulator returned an unparsable result.")
-        answer_type = answer.get("type")
-        allowed = _CLASSIFIER_ANSWER_KEYS.get(answer_type) if isinstance(answer_type, str) else None
-        if allowed is None or not allowed.issubset(answer):
-            raise EmulatorProviderError(message="The emulator returned an unparsable result.")
-        answers[name] = {key: answer[key] for key in allowed}
-    usage_raw = data.get("usage")
-    usage = usage_raw if isinstance(usage_raw, dict) else {}
-    model = data.get("model")
-    return SystemOneResult.model_validate(
-        {
-            "model": model if isinstance(model, str) and model else DEFAULT_CLASSIFIER_MODEL,
-            "answers": answers,
-            "usage": {
-                "input_tokens": usage.get("input_tokens", 0) or 0,
-                "output_tokens": usage.get("output_tokens", 0) or 0,
-            },
-        }
-    )
 
 
 class EmulatorClient:

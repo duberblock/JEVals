@@ -7,6 +7,10 @@ from pydantic import ValidationError
 
 from app.domain.executions.jev import JevProviderError
 from app.domain.executions.models import JsonObject
+from app.providers.simple_jev import (
+    classifier_payload as _classifier_payload,
+    result_from_classifier as _result_from_classifier,
+)
 from app.schemas.system_one_result import SystemOneResult
 
 JEV_TIMEOUT_SECONDS = 60.0
@@ -50,11 +54,17 @@ class JevClient:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.model = model
-        # The same explicit-endpoint convention as the emulator: a full URL
-        # ending in /v1/systemone is POSTed VERBATIM (the user chose the
-        # endpoint by pasting it); a bare base gets the path appended.
+        # The same explicit-endpoint convention as the emulator, and the
+        # same protocol freedom: a full URL ending in /v1/systemone posts
+        # verbatim, a full URL ending in /v1/classifier speaks the Simple
+        # Jev contract (translated via the shared module), and a bare base
+        # gets the systemone path appended.
         path = urlparse(self.base_url).path.rstrip("/")
-        self._target = self.base_url if path.endswith("/v1/systemone") else self.base_url + SYSTEM_ONE_ENDPOINT
+        self._classifier_mode = path.endswith("/v1/classifier")
+        if path.endswith("/v1/systemone") or self._classifier_mode:
+            self._target = self.base_url
+        else:
+            self._target = self.base_url + SYSTEM_ONE_ENDPOINT
         self._client = httpx.AsyncClient(
             timeout=timeout,
             transport=transport,
@@ -67,9 +77,18 @@ class JevClient:
         # None, or empty model inherits this client's default; an explicit
         # override is forwarded untouched. All other request properties are
         # forwarded as-is, exactly as the SDK forwards them.
-        payload: JsonObject = dict(request)
-        if not payload.get("model"):
-            payload["model"] = self.model
+        if self._classifier_mode:
+            # Simple Jev REQUIRES a model; this client always resolves one
+            # (its own default when nothing is configured) — a strictly
+            # better default position than the emulator's.
+            try:
+                payload = _classifier_payload(request, self.model)
+            except ValueError as error:
+                raise JevProviderError(message="The JEV request is invalid.") from error
+        else:
+            payload = dict(request)
+            if not payload.get("model"):
+                payload["model"] = self.model
         try:
             response = await self._client.post(self._target, json=payload)
         except httpx.TimeoutException as error:
@@ -84,6 +103,8 @@ class JevClient:
                 status=response.status_code,
             )
         try:
+            if self._classifier_mode:
+                return _result_from_classifier(response.json())
             return SystemOneResult.model_validate(response.json())
         except (ValidationError, ValueError) as error:
             raise JevProviderError(

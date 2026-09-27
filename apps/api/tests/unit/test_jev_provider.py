@@ -214,3 +214,47 @@ def test_a_full_systemone_url_posts_verbatim():
     assert str(captured[0].url) == "https://jevs.example/v1/systemone"
     # The wire body still resolves the model (required on the wire).
     assert json.loads(captured[0].read())["model"] == client.model
+
+
+def test_a_full_classifier_url_speaks_the_simple_jev_contract():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "model": "featherless-ai/Qwen3.6-35B-A3B-classifier",
+                "answers": {
+                    "q": {
+                        "type": "choice",
+                        "choice": "yes",
+                        "confidence": 0.9,
+                        "probabilities": {"yes": 0.9, "no": 0.1},
+                        "extra": "stripped",
+                    }
+                },
+                "usage": {"input_tokens": 7, "output_tokens": 1},
+            },
+        )
+
+    request = {
+        "state": "s",
+        "questions": {"q": {"type": "choice", "criteria": {"yes": None, "no": None}}},
+    }
+    client = JevClient(
+        base_url="https://simple-jev.example/v1/classifier",
+        api_key="k",
+        transport=httpx.MockTransport(handler),
+    )
+    result = asyncio.run(client.execute(request))
+
+    assert len(captured) == 1
+    assert str(captured[0].url) == "https://simple-jev.example/v1/classifier"
+    body = json.loads(captured[0].read())
+    # The client's resolved model feeds the REQUIRED classifier model, and
+    # the missing instructions gain their name-derived default.
+    assert body["model"] == client.model
+    assert body["questions"]["q"]["instructions"] == "Answer the question 'q'."
+    assert result.answers["q"].choice == "yes"
+    assert result.usage.input_tokens == 7
