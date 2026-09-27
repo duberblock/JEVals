@@ -695,7 +695,7 @@ export const es = {
     help: {
       emulator:
         'Funciona sin configurar — el endpoint predeterminado ya viene puesto. El modelo solo importa para endpoints de Simple Jev (ejemplo: featherless-ai/Qwen3.6-35B-A3B-classifier — vacío usa ese default). La API key solo si tu endpoint exige autenticación.',
-      jev: 'El baseline de typesafe.ai. La API key es obligatoria; el modelo es opcional y por defecto es jev-latest.',
+      jev: 'Idealmente apunta aquí al servicio JEV hospedado: https://jevs-jimmy.blockito.cloud/v1/systemone (pega el URL completo). También sirven otros servicios SystemOne (…/v1/systemone), endpoints de Simple Jev (…/v1/classifier) o una base sin path. API key obligatoria — cualquier valor no vacío si el endpoint no exige autenticación. El modelo es opcional: por defecto jev-latest en systemone y el modelo del classifier en Simple Jev.',
       judge: 'Cualquier endpoint OpenAI-compatible. Endpoint, modelo y API key son los tres obligatorios — ejemplo: https://api.openai.com/v1 con gpt-5-nano.',
       independent: 'Tiene la misma forma del Judge — oprime "Copiar configuración del Judge" para no escribirla dos veces. Para endpoints tipo GLM desmarca "Salidas estructuradas nativas" para que las preguntas viajen en el prompt.'
     },
@@ -708,7 +708,7 @@ export const es = {
       },
       jev: {
         name: 'Baseline JEV',
-        description: 'Pega el URL COMPLETO del endpoint — …/v1/systemone (cualquier servicio SystemOne, p. ej. el hospedado que usa el emulador por defecto) o …/v1/classifier (Simple Jev); una base sin path también sirve. API key obligatoria; cualquier valor no vacío si el endpoint no tiene autenticación.'
+        description: 'El baseline typesafe.ai contra el que se compara el emulador — idealmente el servicio JEV hospedado.'
       },
       judge: {
         name: 'Judge',
