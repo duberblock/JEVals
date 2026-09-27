@@ -119,13 +119,17 @@ def test_provider_error_is_a_plain_safe_surface():
     assert str(error) == "The emulator returned HTTP 500."
 
 
-def test_get_emulator_provider_returns_none_when_unconfigured(tmp_path, monkeypatch):
-    # chdir isolates pydantic-settings' relative env_file resolution so a
-    # developer's local .env cannot leak EMULATOR_URL into the test.
+def test_get_emulator_provider_builds_the_default_client_when_unset(tmp_path, monkeypatch):
+    # Supersedes the "unconfigured returns None" pin: the emulator now
+    # defaults to the free public Simple Jev demo, so an unset environment
+    # still builds a working client. chdir keeps pydantic-settings' relative
+    # env_file resolution hermetic.
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("EMULATOR_URL", raising=False)
 
-    assert get_emulator_provider() is None
+    provider = get_emulator_provider()
+    assert provider is not None
+    assert provider.base_url == "https://simple-jev-demo-api.featherless.ai/v1/classifier"
 
 
 def test_get_emulator_provider_builds_client_from_environment(tmp_path, monkeypatch):

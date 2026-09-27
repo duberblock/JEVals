@@ -80,7 +80,11 @@ def test_get_with_nothing_configured_shows_the_honest_empty_view(client):
                       "configuredHere": {"endpoint": False, "model": False, "apiKey": False}}
     # Endpoints show their environment DEFAULTS (nothing invented, just the
     # documented base URLs); nothing is available without keys/models.
-    assert providers["emulator"] == {"endpoint": None, **not_configured}
+    assert providers["emulator"] == {
+        "endpoint": "https://simple-jev-demo-api.featherless.ai/v1/classifier",
+        **not_configured,
+        "available": True,
+    }
     assert providers["jev"] == {"endpoint": "https://api.typesafe.ai", **not_configured}
     assert providers["judge"] == {"endpoint": "https://api.openai.com/v1", **not_configured}
     assert providers["independent"] == {"endpoint": "https://api.openai.com/v1", **not_configured}
@@ -222,7 +226,11 @@ def test_compose_style_empty_env_strings_read_as_not_configured(client, monkeypa
     monkeypatch.setenv("OPENAI_MODEL", "")
 
     providers = client.get("/api/v1/settings").json()["providers"]
-    assert providers["emulator"]["endpoint"] is None
+    # The emulator keeps its out-of-the-box default even when the template
+    # passes an empty string.
+    assert providers["emulator"]["endpoint"] == (
+        "https://simple-jev-demo-api.featherless.ai/v1/classifier"
+    )
     assert providers["emulator"]["keySet"] is False
     assert providers["judge"]["keySet"] is False
     assert providers["independent"]["keySet"] is False

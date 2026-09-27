@@ -5,9 +5,18 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+DEFAULT_EMULATOR_URL = "https://simple-jev-demo-api.featherless.ai/v1/classifier"
+
+
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./jevals.db"
-    emulator_url: str | None = None
+    # Works out of the box: the emulator defaults to the free public
+    # Simple Jev demo (no key; 2k-token context, 2 req/s). Executions send
+    # the scenario text there until you override it with your own endpoint
+    # (…/v1/systemone or …/v1/classifier) via env or the settings UI. An
+    # empty/unset value KEEPS this default — "disabled" is not a state the
+    # emulator leg has anymore.
+    emulator_url: str = DEFAULT_EMULATOR_URL
     typesafe_api_key: str | None = None
     # API root for the real JEV, matching the vendored SDK's baseURL default.
     typesafe_base_url: str = "https://api.typesafe.ai"
@@ -51,8 +60,14 @@ class Settings(BaseSettings):
     # Deployment env templates pass empty strings for unset optional
     # variables (compose `${VAR:-}`); an empty provider field means "not
     # configured" and must read as None everywhere downstream.
+    @field_validator("emulator_url", mode="before")
+    @classmethod
+    def _empty_emulator_url_keeps_the_default(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return DEFAULT_EMULATOR_URL
+        return value
+
     @field_validator(
-        "emulator_url",
         "emulator_api_key",
         "emulator_model",
         "typesafe_api_key",

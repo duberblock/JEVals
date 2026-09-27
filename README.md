@@ -62,16 +62,16 @@ falls back to it.
 
 Both provider legs can run on your machine:
 
-- **Emulator** — paste the **full endpoint URL** into the card:
-  `…/v1/systemone` for any SystemOne service, or `…/v1/classifier` for a
-  [Simple Jev](https://simple-jev.featherless.ai/) deployment (the
-  open-source structured-decision classifier; agent-facing docs:
-  [skills.md](https://simple-jev.featherless.ai/skills.md) — same
-  choice/score/noul taxonomy). The URL IS the protocol choice — the API
-  posts exactly what you paste. The **Use the public demo** button fills
-  `https://simple-jev-demo-api.featherless.ai/v1/classifier`, which works
-  with no key (demo limits: 2k tokens of context, 2 req/s); for production
-  limits get a key at featherless.ai and use
+- **Emulator — works out of the box**: the default endpoint is the free
+  public [Simple Jev](https://simple-jev.featherless.ai/) demo
+  (`https://simple-jev-demo-api.featherless.ai/v1/classifier`, no key;
+  limits: 2k tokens of context, 2 req/s). Note executions send the scenario
+  text to that service until you override it. To use your own, paste the
+  **full endpoint URL** into the card — `…/v1/systemone` for any SystemOne
+  service or `…/v1/classifier` for a Simple Jev deployment (agent-facing
+  docs: [skills.md](https://simple-jev.featherless.ai/skills.md); the URL
+  IS the protocol choice — the API posts exactly what you paste). For
+  production limits get a key at featherless.ai and use
   `https://api.featherless.ai/v1/classifier` with it.
 
 - **Judge + independent — [Ollama](https://ollama.com)** (or any local

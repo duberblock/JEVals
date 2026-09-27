@@ -32,12 +32,14 @@ def client(tmp_path, monkeypatch):
     return TestClient(app)
 
 
-def test_with_nothing_configured_nothing_is_available(client):
+def test_with_nothing_configured_the_default_emulator_is_available(client):
+    # Out of the box the emulator points at the free public Simple Jev demo
+    # — the other sources still need real credentials.
     response = client.get("/api/v1/capabilities")
 
     assert response.status_code == 200
     assert response.json() == {
-        "emulator": {"available": False},
+        "emulator": {"available": True},
         "jev": {"available": False},
         "openai": {"available": False, "models": []},
     }

@@ -68,7 +68,7 @@ Canonical names mirror `apps/api/app/core/config.py` (see `.env.example`):
 | `DATABASE_URL` | SQLite location | `sqlite:///./jevals.db` (dev) |
 | `AUTH_USER` / `AUTH_PASS` | origin Basic Auth credentials | required when `AUTH_REQUIRED=true` |
 | `AUTH_REQUIRED` | API fail-closed auth posture | unset = dev pass-through |
-| `EMULATOR_URL` | deterministic emulator endpoint | unset = source unavailable |
+| `EMULATOR_URL` | deterministic emulator endpoint (full URL; empty/unset keeps the public Simple Jev demo default) | public demo |
 | `TYPESAFE_API_KEY` / `TYPESAFE_BASE_URL` | JEV baseline provider | unset = source unavailable |
 | `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` | independent + judge provider | unset = source unavailable |
 | `OPENAI_STRUCTURED_OUTPUTS` | structured-output mode for the LLM provider | `true` |
