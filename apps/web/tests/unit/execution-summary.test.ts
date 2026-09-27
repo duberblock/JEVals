@@ -71,14 +71,14 @@ describe('summarizeSnapshot — per-source status strip (C7)', () => {
 // (emulator, jev, ai_evaluation, independent_openai), deduped preserving first
 // occurrence, never invented (§63: no names without persisted evidence).
 // FB2 (R40/P29) supersedes the raw-emulator pins here: the emulator entry of
-// these SUMMARY surfaces shows the display alias 'Emulator 0.0.1' (see the
+// these SUMMARY surfaces shows the emulator's REAL model (see the
 // FB2 describe below) — the other sources keep their real models.
 describe('summarizeSnapshot — context-bar facts (C5)', () => {
   it('carries mode verbatim and collects the provider models in source order', () => {
     const summary = summarizeSnapshot(compareSnapshot())
 
     expect(summary.mode).toBe('compare-and-evaluate')
-    expect(summary.providers).toEqual(['Emulator 0.0.1', 'jev-latest', 'judge-llm', 'gpt-4o-mini'])
+    expect(summary.providers).toEqual(['jev-emulator', 'jev-latest', 'judge-llm', 'gpt-4o-mini'])
   })
 
   it('dedupes repeated models preserving the first occurrence', () => {
@@ -92,10 +92,10 @@ describe('summarizeSnapshot — context-bar facts (C5)', () => {
 
     const summary = summarizeSnapshot(snapshot)
 
-    // FB2 (P29): the emulator entry displays the alias regardless of its raw
-    // model, so the dedupe now collapses judge/independent (both gpt-4o-mini) —
-    // the first-occurrence pin survives with the alias leading the list.
-    expect(summary.providers).toEqual(['Emulator 0.0.1', 'jev-latest', 'gpt-4o-mini'])
+    // FB2 superseded: the emulator entry now carries its REAL model
+    // (gpt-4o-mini here), so the dedupe collapses it with judge/independent
+    // — first occurrence wins, leading the list.
+    expect(summary.providers).toEqual(['gpt-4o-mini', 'jev-latest'])
   })
 
   it('skips empty model strings and stays empty when no section carried a model', () => {
@@ -116,15 +116,15 @@ describe('summarizeSnapshot — context-bar facts (C5)', () => {
 })
 
 // FB2 (R40/P29, docs/feedback-v1-ux.md §FB2): summary/display surfaces show
-// the alias 'Emulator 0.0.1' wherever the emulator's MODEL string renders —
+// the REAL model wherever the emulator's MODEL string renders —
 // a §9 category-4 purely visual UI label (owner-approved), not provenance.
 // Evidence §44, Copy/Download and the persisted payload keep the REAL model.
 describe('summarizeSnapshot — FB2 emulator display alias (P29)', () => {
-  it("shows 'Emulator 0.0.1' as the summary model and as the emulator providers entry", () => {
+  it("shows the emulator's real model as the summary model and providers entry", () => {
     const summary = summarizeSnapshot(compareSnapshot())
 
-    expect(summary.model).toBe('Emulator 0.0.1')
-    expect(summary.providers).toContain('Emulator 0.0.1')
+    expect(summary.model).toBe('jev-emulator')
+    expect(summary.providers).toContain('jev-emulator')
   })
 
   it('substitutes only when a real emulator model exists — absent model renders nothing', () => {
@@ -136,14 +136,14 @@ describe('summarizeSnapshot — FB2 emulator display alias (P29)', () => {
     const summary = summarizeSnapshot(snapshot)
 
     expect(summary.model).toBe('')
-    expect(summary.providers).not.toContain('Emulator 0.0.1')
+    expect(summary.providers).not.toContain('jev-emulator')
   })
 
   it('keeps the REAL jev/judge/independent models untouched (alias is emulator-only)', () => {
     const summary = summarizeSnapshot(compareSnapshot())
 
     expect(summary.jevModel).toBe('jev-latest')
-    expect(summary.providers).toEqual(['Emulator 0.0.1', 'jev-latest', 'judge-llm', 'gpt-4o-mini'])
+    expect(summary.providers).toEqual(['jev-emulator', 'jev-latest', 'judge-llm', 'gpt-4o-mini'])
   })
 
   it('never mutates the snapshot: the raw payload keeps the real emulator model', () => {

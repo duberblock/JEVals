@@ -502,8 +502,8 @@ describe('PrincipalView — execution flow', () => {
     // C5: the model and duration now appear in BOTH the hero facts and the
     // context-bar providers/duration segments — assert both occurrences.
     // FB2 (R40/P29) supersedes the raw-model pin: summary surfaces display
-    // the 'Emulator 0.0.1' alias, never the raw emulator model.
-    expect(screen.getAllByText('Emulator 0.0.1')).toHaveLength(2)
+    // the emulator's REAL model as the run reported it (FB2 superseded).
+    expect(screen.getAllByText('gpt-4o-mini-flash')).toHaveLength(2)
     expect(screen.getAllByText('1,420 ms')).toHaveLength(2)
     expect(screen.getByText('request_type · CHOICE')).toBeInTheDocument()
     expect(screen.getByText('billing')).toBeInTheDocument()
@@ -1527,9 +1527,10 @@ describe('PrincipalView — context bar and provider health (C5/C8)', () => {
     expect(bar).toHaveTextContent('run_deadbeef')
     expect(bar).toHaveTextContent('Emulator') // mode label via the recent-executions idiom
     expect(bar).toHaveTextContent('1,420 ms')
-    // FB2 (R40/P29) supersedes the raw-model pin: the providers segment
-    // shows the display alias, never the raw emulator model.
-    expect(bar).toHaveTextContent('Emulator 0.0.1')
+    // FB2 superseded (owner 2026-09-27): the providers segment shows the
+    // model that ACTUALLY ran — this fixture deliberately uses a confusing
+    // 'gpt-4o-mini-flash' emulator model, now displayed verbatim.
+    expect(bar).toHaveTextContent('gpt-4o-mini-flash')
     expect(bar).not.toHaveTextContent('No active execution')
   })
 

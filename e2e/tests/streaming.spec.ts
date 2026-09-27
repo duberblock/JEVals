@@ -183,7 +183,7 @@ test.describe('P28 streaming run lane', () => {
       await expect(hero).toContainText('95%')
       await expect(hero).toContainText('JEV Fidelity')
       await expect(hero).toContainText('3 / 3 questions aligned')
-      await expect(hero).toContainText('Emulator 0.0.1')
+      await expect(hero).toContainText('jev-emulator')
       await expect(hero).toContainText('jev-latest')
       await expect(hero).toContainText('Independent: aligned')
       await expect(hero).not.toContainText('Judge:')

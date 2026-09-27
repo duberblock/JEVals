@@ -261,10 +261,13 @@ function sourceRunStatus(status: string | undefined): SourceRunStatus {
 // and needs no i18n key. Single source — never duplicate this string.
 export const EMULATOR_DISPLAY_VERSION = '0.0.1'
 
-// FB2 (P29): the alias label itself — substituted ONLY when a real emulator
-// model exists (an absent/empty model still contributes nothing anywhere).
+// FB2 SUPERSEDED (owner 2026-09-27): summary surfaces show the model that
+// ACTUALLY ran — result.model as the endpoint reported it (e.g.
+// 'llama-3.1-8b-emulator' from a SystemOne service, or a Simple Jev
+// classifier id). The 'Emulator 0.0.1' visual alias is gone; the guard
+// stays (an absent/empty model still contributes nothing anywhere).
 function emulatorDisplayModel(model: string | undefined): string | undefined {
-  return typeof model === 'string' && model !== '' ? `Emulator ${EMULATOR_DISPLAY_VERSION}` : undefined
+  return typeof model === 'string' && model !== '' ? model : undefined
 }
 
 // P41: the mid-run sections a progressive summary derives from — the SSE
@@ -300,8 +303,8 @@ type SummarySections = {
 
 // C5: the models of the sections that ran, in §65 source order (emulator,
 // JEV, Judge, Independent). Deduped preserving first occurrence; empty or
-// absent models contribute nothing. FB2 (P29): the emulator entry carries
-// the display alias — the other sources keep their real models verbatim.
+// absent models contribute nothing. FB2 superseded: every entry carries
+// its REAL model verbatim — the run's own report is the truth.
 function providerModels(sections: SummarySections): string[] {
   const models = [
     emulatorDisplayModel(sections.emulator?.model),

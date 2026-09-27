@@ -827,8 +827,8 @@ describe('PrincipalView — progressive hero during the SSE run (P41)', () => {
     expect(screen.getByText('96.8%')).toBeInTheDocument()
     expect(screen.getByText('JEV Fidelity')).toBeInTheDocument()
     expect(screen.getByText('3 / 3 questions aligned')).toBeInTheDocument()
-    // FB2 alias for the emulator model; the JEV model verbatim.
-    expect(screen.getByText('Emulator 0.0.1')).toBeInTheDocument()
+    // FB2 superseded: the emulator's REAL model verbatim, like the JEV's.
+    expect(screen.getByText('gpt-4o-mini-flash')).toBeInTheDocument()
     expect(screen.getByText('jev-latest')).toBeInTheDocument()
     expect(screen.getByText('Questions').nextElementSibling).toHaveTextContent('3')
 
@@ -943,7 +943,7 @@ describe('PrincipalView — progressive hero during the SSE run (P41)', () => {
     expect(screen.getByText('96.8%')).toBeInTheDocument()
     expect(screen.getByText('JEV Fidelity')).toBeInTheDocument()
     expect(screen.getByText('3 / 3 questions aligned')).toBeInTheDocument()
-    expect(screen.getByText('Emulator 0.0.1')).toBeInTheDocument()
+    expect(screen.getByText('gpt-4o-mini-flash')).toBeInTheDocument()
     expect(screen.getByText('jev-latest')).toBeInTheDocument()
     expect(screen.getByText('Judge: No material divergence')).toBeInTheDocument()
     expect(screen.getByText('Independent: aligned')).toBeInTheDocument()

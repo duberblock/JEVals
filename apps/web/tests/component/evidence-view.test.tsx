@@ -264,7 +264,7 @@ describe('EvidenceView — exact payload views and copy actions (§44/§45.1)', 
     renderEvidence('full')
 
     expect(payloadText()).toContain('"model": "jev-emulator"')
-    expect(payloadText()).not.toContain('Emulator 0.0.1')
+    expect(payloadText()).toContain('jev-emulator')
   })
 
   it('renders an honest unavailable note for a source the run did not produce', () => {
