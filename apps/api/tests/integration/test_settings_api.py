@@ -81,7 +81,7 @@ def test_get_with_nothing_configured_shows_the_honest_empty_view(client):
     # Endpoints show their environment DEFAULTS (nothing invented, just the
     # documented base URLs); nothing is available without keys/models.
     assert providers["emulator"] == {
-        "endpoint": "https://simple-jev-demo-api.featherless.ai/v1/classifier",
+        "endpoint": "https://jevs-jimmy.blockito.cloud/v1/systemone",
         **not_configured,
         "available": True,
     }
@@ -229,7 +229,7 @@ def test_compose_style_empty_env_strings_read_as_not_configured(client, monkeypa
     # The emulator keeps its out-of-the-box default even when the template
     # passes an empty string.
     assert providers["emulator"]["endpoint"] == (
-        "https://simple-jev-demo-api.featherless.ai/v1/classifier"
+        "https://jevs-jimmy.blockito.cloud/v1/systemone"
     )
     assert providers["emulator"]["keySet"] is False
     assert providers["judge"]["keySet"] is False

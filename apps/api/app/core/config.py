@@ -5,17 +5,19 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-DEFAULT_EMULATOR_URL = "https://simple-jev-demo-api.featherless.ai/v1/classifier"
+DEFAULT_EMULATOR_URL = "https://jevs-jimmy.blockito.cloud/v1/systemone"
+# The settings-UI one-click alternative (README "fully local" story).
+PUBLIC_DEMO_EMULATOR_URL = "https://simple-jev-demo-api.featherless.ai/v1/classifier"
 
 
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./jevals.db"
-    # Works out of the box: the emulator defaults to the free public
-    # Simple Jev demo (no key; 2k-token context, 2 req/s). Executions send
-    # the scenario text there until you override it with your own endpoint
-    # (…/v1/systemone or …/v1/classifier) via env or the settings UI. An
-    # empty/unset value KEEPS this default — "disabled" is not a state the
-    # emulator leg has anymore.
+    # Works out of the box: the emulator defaults to the hosted SystemOne
+    # service (jevs-jimmy). The free public Simple Jev classifier demo
+    # (…/v1/classifier, no key, 2k-token context, 2 req/s) is one click
+    # away in the settings UI, and any full endpoint URL (…/v1/systemone or
+    # …/v1/classifier) overrides via env or the UI. An empty/unset value
+    # KEEPS this default — "disabled" is not a state the emulator leg has.
     emulator_url: str = DEFAULT_EMULATOR_URL
     typesafe_api_key: str | None = None
     # API root for the real JEV, matching the vendored SDK's baseURL default.

@@ -62,17 +62,18 @@ falls back to it.
 
 Both provider legs can run on your machine:
 
-- **Emulator — works out of the box**: the default endpoint is the free
-  public [Simple Jev](https://simple-jev.featherless.ai/) demo
-  (`https://simple-jev-demo-api.featherless.ai/v1/classifier`, no key;
-  limits: 2k tokens of context, 2 req/s). Note executions send the scenario
-  text to that service until you override it. To use your own, paste the
-  **full endpoint URL** into the card — `…/v1/systemone` for any SystemOne
-  service or `…/v1/classifier` for a Simple Jev deployment (agent-facing
-  docs: [skills.md](https://simple-jev.featherless.ai/skills.md); the URL
-  IS the protocol choice — the API posts exactly what you paste). For
-  production limits get a key at featherless.ai and use
-  `https://api.featherless.ai/v1/classifier` with it.
+- **Emulator — works out of the box**: the default endpoint is the hosted
+  SystemOne service (`https://jevs-jimmy.blockito.cloud/v1/systemone`).
+  Two one-step alternatives: the **Use the public demo** button in the
+  settings card fills the free [Simple Jev](https://simple-jev.featherless.ai/)
+  demo (`https://simple-jev-demo-api.featherless.ai/v1/classifier` — no
+  key; limits: 2k tokens of context, 2 req/s; agent-facing docs:
+  [skills.md](https://simple-jev.featherless.ai/skills.md)), or paste any
+  **full endpoint URL** (`…/v1/systemone` or `…/v1/classifier` — the URL
+  IS the protocol choice, the API posts exactly what you paste). For
+  Simple Jev production limits get a key at featherless.ai and use
+  `https://api.featherless.ai/v1/classifier` with it. Whichever endpoint
+  is active receives the scenario text on every execution.
 
 - **Judge + independent — [Ollama](https://ollama.com)** (or any local
   OpenAI-compatible server):

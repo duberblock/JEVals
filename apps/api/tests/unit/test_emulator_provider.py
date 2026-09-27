@@ -129,7 +129,7 @@ def test_get_emulator_provider_builds_the_default_client_when_unset(tmp_path, mo
 
     provider = get_emulator_provider()
     assert provider is not None
-    assert provider.base_url == "https://simple-jev-demo-api.featherless.ai/v1/classifier"
+    assert provider.base_url == "https://jevs-jimmy.blockito.cloud/v1/systemone"
 
 
 def test_get_emulator_provider_builds_client_from_environment(tmp_path, monkeypatch):
