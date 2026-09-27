@@ -51,6 +51,15 @@ const MODEL_HINTS: Record<ProviderName, string> = {
   independent: 'gpt-5-nano',
 }
 
+// Expected endpoint per provider, shown as the box's placeholder when the
+// field is empty — the same values the collapsible guide spells out.
+const ENDPOINT_HINTS: Record<ProviderName, string> = {
+  emulator: 'https://jevs-jimmy.blockito.cloud/v1/systemone',
+  jev: 'https://jevs-jimmy.blockito.cloud/v1/systemone',
+  judge: 'https://api.openai.com/v1',
+  independent: 'https://api.openai.com/v1',
+}
+
 const REQUIRED: Record<ProviderName, { model: boolean; apiKey: boolean }> = {
   emulator: { model: false, apiKey: false },
   jev: { model: false, apiKey: true },
@@ -174,7 +183,7 @@ function ProviderCard({
             className="h-10 rounded-lg border border-input bg-transparent px-3 text-sm"
             id={`settings-${name}-endpoint`}
             onChange={(event) => setEndpoint(event.target.value)}
-            placeholder={demo?.url ?? ''}
+            placeholder={demo?.url ?? ENDPOINT_HINTS[name]}
             type="text"
             value={endpoint}
           />

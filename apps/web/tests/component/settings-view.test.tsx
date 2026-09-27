@@ -227,12 +227,15 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   fireEvent.click(within(screen.getByTestId('settings-card-emulator')).getByRole('button', { name: 'View guide' }))
   expect(screen.getByText(/default endpoint is already set/i)).toBeInTheDocument()
   fireEvent.click(within(screen.getByTestId('settings-card-independent')).getByRole('button', { name: 'View guide' }))
-  expect(screen.getByText(/avoid typing it twice/i)).toBeInTheDocument()
+  expect(screen.getByText(/inherit the judge/i)).toBeInTheDocument()
 
-  // Model inputs teach with example placeholders.
+  // Model inputs teach with example placeholders; endpoint inputs carry the
+  // expected endpoint per provider (the emulator's demo URL wins for it).
   const judge = within(screen.getByTestId('settings-card-judge'))
   expect((judge.getByLabelText('Model', { exact: false }) as HTMLInputElement).placeholder).toBe('gpt-5-nano')
+  expect((judge.getByLabelText('Endpoint') as HTMLInputElement).placeholder).toBe('https://api.openai.com/v1')
   expect((within(screen.getByTestId('settings-card-jev')).getByLabelText('Model') as HTMLInputElement).placeholder).toBe('jev-latest')
+  expect((within(screen.getByTestId('settings-card-jev')).getByLabelText('Endpoint') as HTMLInputElement).placeholder).toBe('https://jevs-jimmy.blockito.cloud/v1/systemone')
 
   // One click copies the judge configuration server-side — and the boxes
   // SHOW it: the card reinitializes from the copy response (the copied

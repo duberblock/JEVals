@@ -694,10 +694,10 @@ export const es = {
     helpOpen: 'Ver guía',
     help: {
       emulator:
-        'Funciona sin configurar — el endpoint predeterminado ya viene puesto. El modelo solo importa para endpoints de Simple Jev (ejemplo: featherless-ai/Qwen3.6-35B-A3B-classifier — vacío usa ese default). La API key solo si tu endpoint exige autenticación.',
-      jev: 'Idealmente apunta aquí al servicio JEV hospedado: https://jevs-jimmy.blockito.cloud/v1/systemone (pega el URL completo). También sirven otros servicios SystemOne (…/v1/systemone), endpoints de Simple Jev (…/v1/classifier) o una base sin path. API key obligatoria — cualquier valor no vacío si el endpoint no exige autenticación. El modelo es opcional: por defecto jev-latest en systemone y el modelo del classifier en Simple Jev.',
-      judge: 'Cualquier endpoint OpenAI-compatible. Endpoint, modelo y API key son los tres obligatorios — ejemplo: https://api.openai.com/v1 con gpt-5-nano.',
-      independent: 'Tiene la misma forma del Judge — oprime "Copiar configuración del Judge" para no escribirla dos veces. Para endpoints tipo GLM desmarca "Salidas estructuradas nativas" para que las preguntas viajen en el prompt.'
+        'Funciona sin configurar — el endpoint predeterminado ya viene puesto. El modelo solo importa para endpoints de Simple Jev (ejemplo: featherless-ai/Qwen3.6-35B-A3B-classifier — vacío usa ese default). La API key solo si tu endpoint exige autenticación. Documentación de los servicios: Simple Jev — https://simple-jev.featherless.ai/skills.md · SystemOne hospedado — https://jevs-jimmy.blockito.cloud/SKILL.md.',
+      jev: 'Endpoint esperado: https://jevs-jimmy.blockito.cloud/v1/systemone — el servicio JEV hospedado; pega el URL completo. También sirven otros servicios SystemOne (…/v1/systemone), endpoints de Simple Jev (…/v1/classifier) o una base sin path. Modelo esperado: jev-latest (opcional — vacío lo usa por defecto en systemone; el modelo del classifier en Simple Jev). API key obligatoria — cualquier valor no vacío si el endpoint no exige autenticación. Documentación del servicio: https://jevs-jimmy.blockito.cloud/SKILL.md.',
+      judge: 'Endpoint esperado: https://api.openai.com/v1 — o cualquier endpoint OpenAI-compatible de chat completions. Modelo esperado: gpt-5-nano (u otro modelo que sirva tu endpoint). Endpoint, modelo y API key son los tres obligatorios.',
+      independent: 'Endpoint esperado: https://api.openai.com/v1 · Modelo esperado: gpt-5-nano — o oprime "Copiar configuración del Judge" para heredar los del Judge. Para endpoints tipo GLM desmarca "Salidas estructuradas nativas" para que las preguntas viajen en el prompt.'
     },
     providers: {
       emulator: {
