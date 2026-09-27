@@ -706,7 +706,7 @@ export const es = {
       },
       jev: {
         name: 'Baseline JEV',
-        description: 'La API SystemOne de typesafe.ai (o un despliegue compatible).'
+        description: 'La API SystemOne de typesafe.ai (o cualquier despliegue compatible /v1/systemone — pega el URL completo del endpoint o una base). API key obligatoria; cualquier valor no vacío si el endpoint no tiene autenticación.'
       },
       judge: {
         name: 'Judge',

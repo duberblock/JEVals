@@ -194,3 +194,23 @@ def test_get_jev_provider_defaults_to_the_public_typesafe_api(tmp_path, monkeypa
     provider = get_jev_provider()
 
     assert provider.base_url == "https://api.typesafe.ai"
+
+
+def test_a_full_systemone_url_posts_verbatim():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(200, json=JEV_RESULT)
+
+    client = JevClient(
+        base_url="https://jevs.example/v1/systemone",
+        api_key="k",
+        transport=httpx.MockTransport(handler),
+    )
+    asyncio.run(client.execute(REQUEST))
+
+    assert len(captured) == 1
+    assert str(captured[0].url) == "https://jevs.example/v1/systemone"
+    # The wire body still resolves the model (required on the wire).
+    assert json.loads(captured[0].read())["model"] == client.model

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 import httpx
 from pydantic import ValidationError
 
@@ -48,8 +50,12 @@ class JevClient:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.model = model
+        # The same explicit-endpoint convention as the emulator: a full URL
+        # ending in /v1/systemone is POSTed VERBATIM (the user chose the
+        # endpoint by pasting it); a bare base gets the path appended.
+        path = urlparse(self.base_url).path.rstrip("/")
+        self._target = self.base_url if path.endswith("/v1/systemone") else self.base_url + SYSTEM_ONE_ENDPOINT
         self._client = httpx.AsyncClient(
-            base_url=self.base_url,
             timeout=timeout,
             transport=transport,
             headers={"Authorization": f"Bearer {self.api_key}"},
@@ -65,7 +71,7 @@ class JevClient:
         if not payload.get("model"):
             payload["model"] = self.model
         try:
-            response = await self._client.post(SYSTEM_ONE_ENDPOINT, json=payload)
+            response = await self._client.post(self._target, json=payload)
         except httpx.TimeoutException as error:
             raise JevProviderError(
                 message="The JEV did not respond within the timeout."
