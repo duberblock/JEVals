@@ -24,6 +24,8 @@ type ProviderView = {
   keySet: boolean
   available: boolean
   configuredHere: { endpoint: boolean; model: boolean; apiKey: boolean }
+  sources?: { endpoint: string; model: string; apiKey: string }
+  defaultEndpoint?: string
 }
 
 type SettingsResponse = {
@@ -31,6 +33,13 @@ type SettingsResponse = {
 }
 
 const PROVIDER_ORDER: ProviderName[] = ['emulator', 'jev', 'judge', 'independent']
+
+function sourceWord(source: string, dictionary: Dictionary['settings']): string {
+  if (source === 'default') return `(${dictionary.fromDefault})`
+  if (source === 'ui') return `(${dictionary.fromUi})`
+  if (source === 'env') return `(${dictionary.fromEnv})`
+  return `(${dictionary.keyNotSet})`
+}
 
 type CardState = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -52,10 +61,10 @@ function ProviderCard({
   const [cleared, setCleared] = useState(false)
   const labels = dictionary.providers[name]
 
-  async function save(clearKey: boolean, endpointOverride?: string) {
+  async function save(clearKey: boolean, endpointOverride?: string | null) {
     setState('saving')
     setCleared(clearKey)
-    const endpointValue = endpointOverride ?? endpoint
+    const endpointValue = endpointOverride !== undefined ? endpointOverride : endpoint
     try {
       const response = await fetch('/api/v1/settings', {
         method: 'PUT',
@@ -88,6 +97,37 @@ function ProviderCard({
         <h2 className="text-base font-semibold">{labels.name}</h2>
         <p className="text-sm text-muted-foreground">{labels.description}</p>
       </div>
+      {demo ? (
+        <div className="mb-3 flex flex-wrap gap-2" data-testid={`settings-${name}-presets`}>
+          {(
+            [
+              [dictionary.presetDefault, view.defaultEndpoint ?? '', view.endpoint === (view.defaultEndpoint ?? null)],
+              [dictionary.presetDemo, demo.url, view.endpoint === demo.url],
+              [dictionary.presetCustom, '', false],
+            ] as Array<[string, string, boolean]>
+          ).map(([label, value, active]) => (
+            <button
+              aria-pressed={active}
+              className={`rounded-lg border px-3 py-1.5 text-sm ${
+                active ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:bg-muted'
+              }`}
+              key={label}
+              onClick={() => {
+                if (label === dictionary.presetCustom) {
+                  document.getElementById(`settings-${name}-endpoint`)?.focus()
+                  return
+                }
+                if (value) setEndpoint(value)
+                else setEndpoint(view.defaultEndpoint ?? '')
+                void save(false, value || null)
+              }}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1">
           <label className="text-sm font-medium" htmlFor={`settings-${name}-endpoint`}>
@@ -133,19 +173,6 @@ function ProviderCard({
         <Button disabled={state === 'saving'} onClick={() => void save(false)} type="button">
           {state === 'saving' ? dictionary.saving : dictionary.save}
         </Button>
-        {demo ? (
-          <Button
-            disabled={state === 'saving'}
-            onClick={() => {
-              setEndpoint(demo.url)
-              void save(false, demo.url)
-            }}
-            type="button"
-            variant="outline"
-          >
-            {demo.label}
-          </Button>
-        ) : null}
         {view.configuredHere.apiKey ? (
           <Button
             disabled={state === 'saving'}
@@ -169,6 +196,11 @@ function ProviderCard({
       <p className="mt-2 text-xs text-muted-foreground" data-testid={`settings-${name}-availability`}>
         {view.available ? `✓ ${dictionary.available}` : `✗ ${dictionary.unavailable}`}
       </p>
+      {view.sources ? (
+        <p className="text-xs text-muted-foreground" data-testid={`settings-${name}-sources`}>
+          {`${dictionary.sourceLine}: ${dictionary.endpoint} ${sourceWord(view.sources.endpoint, dictionary)} · ${dictionary.model} ${sourceWord(view.sources.model, dictionary)} · ${dictionary.apiKey} ${sourceWord(view.sources.apiKey, dictionary)}`}
+        </p>
+      ) : null}
     </section>
   )
 }

@@ -17,6 +17,8 @@ const VIEW = {
     keySet: true,
     available: true,
     configuredHere: { endpoint: true, model: false, apiKey: true },
+    sources: { endpoint: 'ui', model: 'none', apiKey: 'ui' },
+    defaultEndpoint: 'https://jevs-jimmy.blockito.cloud/v1/systemone',
   },
   jev: {
     endpoint: 'https://api.typesafe.ai',
@@ -24,6 +26,7 @@ const VIEW = {
     keySet: false,
     available: false,
     configuredHere: { endpoint: false, model: false, apiKey: false },
+    sources: { endpoint: 'env', model: 'none', apiKey: 'none' },
   },
   judge: {
     endpoint: 'https://api.openai.com/v1',
@@ -84,6 +87,14 @@ describe('SettingsView', () => {
     const keyInput = emulator.getByLabelText('API key') as HTMLInputElement
     expect(keyInput.value).toBe('')
     expect(keyInput.type).toBe('password')
+    // The configuration is VISIBLE: preset options + per-field provenance.
+    expect(emulator.getByTestId('settings-emulator-presets')).toBeInTheDocument()
+    expect(screen.getByTestId('settings-jev-sources')).toHaveTextContent(
+      'Endpoint (environment)'
+    )
+    expect(emulator.getByTestId('settings-emulator-sources')).toHaveTextContent(
+      'Endpoint (configured here)'
+    )
   })
 
   it('saves endpoint, model and a typed key; an empty key is not sent', async () => {
@@ -166,7 +177,8 @@ it('the one-click public demo fills and saves the emulator endpoint', async () =
   const endpointInput = within(screen.getByTestId('settings-card-emulator')).getByLabelText('Endpoint') as HTMLInputElement
   expect(endpointInput.placeholder).toBe('https://simple-jev-demo-api.featherless.ai/v1/classifier')
 
-  fireEvent.click(screen.getByRole('button', { name: 'Use the public demo' }))
+  const presets = within(screen.getByTestId('settings-emulator-presets'))
+  fireEvent.click(presets.getByRole('button', { name: 'Public demo — Simple Jev' }))
 
   await waitFor(() => expect(puts).toHaveLength(1))
   expect(puts[0]).toEqual({

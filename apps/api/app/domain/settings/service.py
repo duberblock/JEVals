@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
+from app.core.config import DEFAULT_EMULATOR_URL, get_settings
 from app.core.crypto import decrypt_secret
 from app.domain.settings import store
 
@@ -93,13 +93,24 @@ def effective_providers(session: Session) -> dict[str, EffectiveProvider]:
     return result
 
 
+def _source(ui: bool, value: str | None, default: str | None = None) -> str:
+    if ui:
+        return "ui"
+    if value is None:
+        return "none"
+    if default is not None and value == default:
+        return "default"
+    return "env"
+
+
 def public_view(providers: dict[str, EffectiveProvider]) -> dict[str, dict]:
     """The GET /settings shape: effective endpoint/model, whether a key is
-    set, and which fields come from the UI — NEVER the key itself."""
+    set, which fields come from the UI, and the SOURCE of every value
+    (default | env | ui | none) — NEVER the key itself."""
     view: dict[str, dict] = {}
     for name in PROVIDERS:
         provider = providers[name]
-        view[name] = {
+        entry = {
             "endpoint": provider.endpoint,
             "model": provider.model,
             "keySet": provider.api_key is not None,
@@ -112,5 +123,16 @@ def public_view(providers: dict[str, EffectiveProvider]) -> dict[str, dict]:
                 "model": provider.ui_model,
                 "apiKey": provider.ui_api_key,
             },
+            "sources": {
+                "endpoint": _source(provider.ui_endpoint, provider.endpoint, DEFAULT_EMULATOR_URL)
+                if name == "emulator"
+                else _source(provider.ui_endpoint, provider.endpoint),
+                "model": _source(provider.ui_model, provider.model),
+                "apiKey": _source(provider.ui_api_key, provider.api_key),
+            },
         }
+        if name == "emulator":
+            # The preset selector needs the factory default client-side.
+            entry["defaultEndpoint"] = DEFAULT_EMULATOR_URL
+        view[name] = entry
     return view

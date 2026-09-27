@@ -12,6 +12,8 @@ const settingsView = {
       keySet: true,
       available: true,
       configuredHere: { endpoint: true, model: false, apiKey: true },
+      sources: { endpoint: 'ui', model: 'none', apiKey: 'ui' },
+      defaultEndpoint: 'https://jevs-jimmy.blockito.cloud/v1/systemone',
     },
     jev: {
       endpoint: 'https://api.typesafe.ai',
@@ -19,6 +21,7 @@ const settingsView = {
       keySet: false,
       available: false,
       configuredHere: { endpoint: false, model: false, apiKey: false },
+      sources: { endpoint: 'env', model: 'none', apiKey: 'none' },
     },
     judge: {
       endpoint: 'https://api.openai.com/v1',
@@ -26,6 +29,7 @@ const settingsView = {
       keySet: false,
       available: false,
       configuredHere: { endpoint: false, model: false, apiKey: false },
+      sources: { endpoint: 'env', model: 'none', apiKey: 'none' },
     },
     independent: {
       endpoint: 'https://api.openai.com/v1',
@@ -33,6 +37,7 @@ const settingsView = {
       keySet: false,
       available: false,
       configuredHere: { endpoint: false, model: false, apiKey: false },
+      sources: { endpoint: 'env', model: 'none', apiKey: 'none' },
     },
   },
 }

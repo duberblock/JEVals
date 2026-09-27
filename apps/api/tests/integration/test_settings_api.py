@@ -80,14 +80,29 @@ def test_get_with_nothing_configured_shows_the_honest_empty_view(client):
                       "configuredHere": {"endpoint": False, "model": False, "apiKey": False}}
     # Endpoints show their environment DEFAULTS (nothing invented, just the
     # documented base URLs); nothing is available without keys/models.
+    sources_default = {"endpoint": "default", "model": "none", "apiKey": "none"}
     assert providers["emulator"] == {
         "endpoint": "https://jevs-jimmy.blockito.cloud/v1/systemone",
         **not_configured,
         "available": True,
+        "sources": sources_default,
+        "defaultEndpoint": "https://jevs-jimmy.blockito.cloud/v1/systemone",
     }
-    assert providers["jev"] == {"endpoint": "https://api.typesafe.ai", **not_configured}
-    assert providers["judge"] == {"endpoint": "https://api.openai.com/v1", **not_configured}
-    assert providers["independent"] == {"endpoint": "https://api.openai.com/v1", **not_configured}
+    assert providers["jev"] == {
+        "endpoint": "https://api.typesafe.ai",
+        **not_configured,
+        "sources": {"endpoint": "env", "model": "none", "apiKey": "none"},
+    }
+    assert providers["judge"] == {
+        "endpoint": "https://api.openai.com/v1",
+        **not_configured,
+        "sources": {"endpoint": "env", "model": "none", "apiKey": "none"},
+    }
+    assert providers["independent"] == {
+        "endpoint": "https://api.openai.com/v1",
+        **not_configured,
+        "sources": {"endpoint": "env", "model": "none", "apiKey": "none"},
+    }
 
 
 def test_get_reflects_the_environment_layer_with_keyset_but_never_the_key(client, monkeypatch):
