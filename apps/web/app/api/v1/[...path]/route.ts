@@ -29,7 +29,10 @@ function upstreamUrl(request: NextRequest): string {
   return `${apiBaseUrl()}${incoming.pathname}${incoming.search}`
 }
 
-async function proxy(request: NextRequest, method: 'GET' | 'POST'): Promise<NextResponse> {
+async function proxy(
+  request: NextRequest,
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+): Promise<NextResponse> {
   const headers = new Headers()
   const contentType = request.headers.get('content-type')
   if (contentType) headers.set('content-type', contentType)
@@ -45,7 +48,7 @@ async function proxy(request: NextRequest, method: 'GET' | 'POST'): Promise<Next
   if (authorization) headers.set('authorization', authorization)
 
   let body: string | undefined
-  if (method === 'POST') body = await request.text()
+  if (method !== 'GET' && method !== 'DELETE') body = await request.text()
 
   let upstream: Response
   try {
@@ -81,4 +84,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   return proxy(request, 'POST')
+}
+
+// The settings screen saves through PUT; PATCH/DELETE ride the same lane
+// for future API surface — same forwarding rules, same verbatim verdicts.
+export async function PUT(request: NextRequest): Promise<NextResponse> {
+  return proxy(request, 'PUT')
+}
+
+export async function PATCH(request: NextRequest): Promise<NextResponse> {
+  return proxy(request, 'PATCH')
+}
+
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  return proxy(request, 'DELETE')
 }
