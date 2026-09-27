@@ -1,0 +1,39 @@
+[project]
+name = "jevals-playground-api"
+version = "0.1.0"
+description = "FastAPI API for the jevals Playground"
+requires-python = ">=3.13"
+dependencies = [
+  "fastapi>=0.118.0",
+  "uvicorn[standard]>=0.37.0",
+  "sqlalchemy>=2.0.43",
+  "alembic>=1.16.5",
+  "pydantic-settings>=2.10.1",
+  "httpx>=0.28.1",
+  "system-one-adapter[openai]==0.2.0",
+  "typesafe-sdk<0.8",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28.1",
+  "jsonschema>=4.26.0",
+  "mypy==2.3.1",
+  "pytest>=8.4.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+# F6 static-analysis gate. Pragmatic incremental scope (NOT --strict):
+# mypy defaults plus bodies of untyped defs checked. Targeted, documented
+# suppressions live at the offending lines; per-file strictness can tighten
+# this later.
+[tool.mypy]
+check_untyped_defs = true
+
+# Third-party packages without type stubs (narrow, per-module — not global).
+[[tool.mypy.overrides]]
+module = ["alembic.*"]
+ignore_missing_imports = true

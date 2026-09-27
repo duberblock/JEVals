@@ -1,0 +1,6 @@
+{
+  "emulator": { "available": true },
+  "jev": { "available": true },
+  "openai": { "available": true, "models": ["gpt-4o-mini"] },
+  "default_model": "gpt-4o-mini"
+}

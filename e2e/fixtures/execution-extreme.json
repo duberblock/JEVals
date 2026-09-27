@@ -1,0 +1,92 @@
+{
+  "execution_id": "run_extreme00001",
+  "created_at": "2026-09-21T10:00:00Z",
+  "request_hash": "sha256:x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7x7",
+  "mode": "emulator",
+  "status": "completed",
+  "request": {
+    "state": {
+      "message": "I was charged twice on my invoice."
+    },
+    "questions": {
+      "technical_support_gateways_infrastructure_middleware_persistence_observability_backpressure": {
+        "type": "choice",
+        "instructions": "Classify this request.",
+        "criteria": {
+          "technical_support_gateways_infrastructure_middleware_persistence_observability_backpressure": "Technical support gateway issue",
+          "another_extremely_long_option_label_without_any_spaces_at_all": "Another extremely long option"
+        }
+      },
+      "urgency": {
+        "type": "score",
+        "criteria": [
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "refund_requested": {
+        "type": "noul",
+        "criteria": {
+          "true": "The customer requests a refund.",
+          "false": "The customer does not request a refund."
+        }
+      }
+    },
+    "model": "technical_support_gateways_infrastructure_middleware_persistence_observability_backpressure"
+  },
+  "emulator": {
+    "status": "success",
+    "model": "jev-emulator",
+    "result": {
+      "answers": {
+        "technical_support_gateways_infrastructure_middleware_persistence_observability_backpressure": {
+          "type": "choice",
+          "choice": "technical_support_gateways_infrastructure_middleware_persistence_observability_backpressure",
+          "confidence": 0.875,
+          "probabilities": {
+            "technical_support_gateways_infrastructure_middleware_persistence_observability_backpressure": 0.75,
+            "another_extremely_long_option_label_without_any_spaces_at_all": 0.25
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.82,
+          "confidence": 0.75,
+          "legend": {
+            "0": "low",
+            "1": "medium",
+            "2": "high"
+          },
+          "probabilities": {
+            "0": 0.1,
+            "1": 0.2,
+            "2": 0.7
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.082
+        }
+      },
+      "usage": {
+        "input_tokens": 120,
+        "output_tokens": 45
+      }
+    }
+  },
+  "runtime": {
+    "duration_ms": 74
+  },
+  "provenance": {
+    "providers": [],
+    "versions": {
+      "emulator": "1.0.0",
+      "api": "1.0.0"
+    },
+    "timings": {
+      "request_validation_ms": 12,
+      "emulator_ms": 62
+    }
+  }
+}

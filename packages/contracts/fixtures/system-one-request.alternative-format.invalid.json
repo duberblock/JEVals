@@ -1,0 +1,17 @@
+{
+  "state": {
+    "message": "I was charged twice on my invoice."
+  },
+  "primitives": [
+    {
+      "name": "request_type",
+      "kind": "classification_single_choice",
+      "allowed_choices": ["billing", "technical"]
+    },
+    {
+      "name": "urgency",
+      "kind": "scalar_score",
+      "range": {"min": 0, "max": 2}
+    }
+  ]
+}

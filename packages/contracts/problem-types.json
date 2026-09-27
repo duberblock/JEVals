@@ -1,0 +1,54 @@
+{
+  "api-unreachable": {
+    "title": "API Unreachable",
+    "status": 502
+  },
+  "emulator-not-configured": {
+    "title": "Emulator Not Configured",
+    "status": 503
+  },
+  "emulator-unavailable": {
+    "title": "Emulator Unavailable",
+    "status": 502
+  },
+  "http-error": {
+    "title": "HTTP Error",
+    "status": null
+  },
+  "internal-server-error": {
+    "title": "Internal Server Error",
+    "status": 500
+  },
+  "invalid-cursor": {
+    "title": "Invalid Cursor",
+    "status": 400
+  },
+  "invalid-json": {
+    "title": "Invalid JSON",
+    "status": 400
+  },
+  "jev-not-configured": {
+    "title": "JEV Not Configured",
+    "status": 503
+  },
+  "invalid-system-one-request": {
+    "title": "Invalid SystemOneRequest",
+    "status": 422
+  },
+  "not-found": {
+    "title": "Not Found",
+    "status": 404
+  },
+  "unauthorized": {
+    "title": "Unauthorized",
+    "status": 401
+  },
+  "validation-error": {
+    "title": "Validation Error",
+    "status": 422
+  },
+  "llm-not-configured": {
+    "title": "LLM Not Configured",
+    "status": 503
+  }
+}

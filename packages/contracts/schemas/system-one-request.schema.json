@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jevals.local/contracts/system-one-request.schema.json",
+  "title": "SystemOneRequest",
+  "type": "object",
+  "required": ["state", "questions"],
+  "properties": {
+    "state": { "$ref": "#/$defs/entryType" },
+    "questions": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/question" }
+    },
+    "model": { "type": "string" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "jsonValue": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "null" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsonValue" }
+        },
+        {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      ]
+    },
+    "entryType": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsonValue" }
+        },
+        {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      ]
+    },
+    "noulQuestion": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "noul" },
+        "instructions": { "$ref": "#/$defs/entryType" },
+        "criteria": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "properties": {
+                "true": { "$ref": "#/$defs/entryType" },
+                "false": { "$ref": "#/$defs/entryType" }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "choiceQuestion": {
+      "type": "object",
+      "required": ["type", "criteria"],
+      "properties": {
+        "type": { "const": "choice" },
+        "instructions": { "$ref": "#/$defs/entryType" },
+        "criteria": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/entryType" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scoreQuestion": {
+      "type": "object",
+      "required": ["type", "criteria"],
+      "properties": {
+        "type": { "const": "score" },
+        "instructions": { "$ref": "#/$defs/entryType" },
+        "criteria": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/entryType" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "question": {
+      "oneOf": [
+        { "$ref": "#/$defs/noulQuestion" },
+        { "$ref": "#/$defs/choiceQuestion" },
+        { "$ref": "#/$defs/scoreQuestion" }
+      ]
+    }
+  }
+}

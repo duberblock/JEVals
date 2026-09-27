@@ -1,0 +1,11 @@
+{
+  "state": {
+    "message": "I was charged twice on my invoice."
+  },
+  "questions": {
+    "urgency": {
+      "type": "score",
+      "criteria": ["low"]
+    }
+  }
+}

@@ -1,0 +1,348 @@
+{
+  "execution_id": "run_e2e0001a2b3c",
+  "created_at": "2026-09-21T10:00:00Z",
+  "request_hash": "sha256:e2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee",
+  "mode": "compare-and-evaluate",
+  "status": "completed",
+  "request": {
+    "state": {
+      "message": "I was charged twice on my invoice."
+    },
+    "questions": {
+      "request_type": {
+        "type": "choice",
+        "instructions": "Classify this request.",
+        "criteria": {
+          "billing": "Billing issue",
+          "technical": "Technical issue",
+          "sales": "Sales request"
+        }
+      },
+      "urgency": {
+        "type": "score",
+        "criteria": [
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "refund_requested": {
+        "type": "noul",
+        "criteria": {
+          "true": "The customer requests a refund.",
+          "false": "The customer does not request a refund."
+        }
+      }
+    },
+    "model": "gpt-4o-mini"
+  },
+  "emulator": {
+    "status": "success",
+    "model": "jev-emulator",
+    "result": {
+      "answers": {
+        "request_type": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 0.875,
+          "probabilities": {
+            "billing": 0.75,
+            "technical": 0.125,
+            "sales": 0.125
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.82,
+          "confidence": 0.75,
+          "legend": {
+            "0": "low",
+            "1": "medium",
+            "2": "high"
+          },
+          "probabilities": {
+            "0": 0.1,
+            "1": 0.2,
+            "2": 0.7
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.082
+        }
+      },
+      "usage": {
+        "input_tokens": 120,
+        "output_tokens": 45
+      }
+    }
+  },
+  "jev": {
+    "status": "success",
+    "model": "jev-latest",
+    "result": {
+      "answers": {
+        "request_type": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 0.625,
+          "probabilities": {
+            "billing": 0.625,
+            "technical": 0.125,
+            "sales": 0.25
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.64,
+          "confidence": 0.625,
+          "legend": {
+            "0": "low",
+            "1": "medium",
+            "2": "high"
+          },
+          "probabilities": {
+            "0": 0.15,
+            "1": 0.25,
+            "2": 0.6
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.119
+        }
+      },
+      "usage": {
+        "input_tokens": 210,
+        "output_tokens": 64
+      }
+    }
+  },
+  "comparison": {
+    "overall_fidelity": 0.95,
+    "questions": {
+      "request_type": {
+        "primitive": "choice",
+        "fidelity": 0.9,
+        "aligned": true,
+        "components": {
+          "decision_match": true,
+          "confidence_delta": 0.25,
+          "distribution_similarity": 0.833
+        }
+      },
+      "urgency": {
+        "primitive": "score",
+        "fidelity": 0.95,
+        "aligned": true,
+        "components": {
+          "score_delta": 0.18,
+          "max_score": 2,
+          "score_similarity": 0.91,
+          "distribution_similarity": 0.85,
+          "confidence_delta": 0.125,
+          "emulator_dominant_level": "2",
+          "jev_dominant_level": "2"
+        }
+      },
+      "refund_requested": {
+        "primitive": "noul",
+        "fidelity": 0.963,
+        "aligned": true,
+        "components": {
+          "probability_delta": 0.037,
+          "emulator_midpoint_category": -1,
+          "jev_midpoint_category": -1
+        }
+      }
+    }
+  },
+  "ai_evaluation": {
+    "status": "success",
+    "model": "judge-llm",
+    "overall": {
+      "prediction_quality": "high",
+      "semantic_divergence": "none",
+      "summary": "Both systems agree on every question; numeric differences leave the interpretation unchanged."
+    },
+    "questions": {
+      "request_type": {
+        "emulator_support": "strong",
+        "jev_support": "strong",
+        "semantic_divergence": "none",
+        "preferred": "tie",
+        "reason": "Both select billing."
+      },
+      "urgency": {
+        "emulator_support": "strong",
+        "jev_support": "strong",
+        "semantic_divergence": "none",
+        "preferred": "tie",
+        "reason": "Scores differ but stay in the same rubric level."
+      },
+      "refund_requested": {
+        "emulator_support": "strong",
+        "jev_support": "partial",
+        "semantic_divergence": "none",
+        "preferred": "tie",
+        "reason": "Both below .5 with different strength."
+      }
+    },
+    "evidence": {
+      "input": {
+        "request": {
+          "state": {
+            "message": "I was charged twice on my invoice."
+          }
+        },
+        "emulator_result": {
+          "model": "jev-emulator",
+          "answers": {},
+          "usage": {
+            "input_tokens": 120,
+            "output_tokens": 45
+          }
+        },
+        "jev_result": {
+          "model": "jev-latest",
+          "answers": {},
+          "usage": {
+            "input_tokens": 210,
+            "output_tokens": 64
+          }
+        },
+        "comparison": {
+          "overall_fidelity": 0.95,
+          "questions": {}
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "overall": {
+            "type": "object"
+          },
+          "questions": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "overall",
+          "questions"
+        ]
+      },
+      "raw_response": "{\n  \"overall\": { \"prediction_quality\": \"high\", \"semantic_divergence\": \"none\", \"summary\": \"Both systems agree on every question.\" },\n  \"questions\": {}\n}",
+      "system_instruction": "You are the jevals semantic judge. Answer only the section 67 schema.",
+      "configuration": {
+        "model": "judge-llm",
+        "temperature": 0,
+        "max_tokens": 4096
+      }
+    }
+  },
+  "independent_openai": {
+    "status": "success",
+    "model": "gpt-4o-mini",
+    "result": {
+      "answers": {
+        "request_type": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 0.75,
+          "probabilities": {
+            "billing": 0.75,
+            "technical": 0.125,
+            "sales": 0.125
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.71,
+          "confidence": 0.7,
+          "legend": {
+            "0": "low",
+            "1": "medium",
+            "2": "high"
+          },
+          "probabilities": {
+            "0": 0.15,
+            "1": 0.2,
+            "2": 0.65
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.081
+        }
+      },
+      "usage": {
+        "input_tokens": 300,
+        "output_tokens": 80
+      }
+    },
+    "alignment": {
+      "aligned": true,
+      "questions": {
+        "request_type": {
+          "agrees_with_emulator": true,
+          "agrees_with_jev": true
+        },
+        "urgency": {
+          "agrees_with_emulator": true,
+          "agrees_with_jev": true,
+          "independent_dominant_level": "2"
+        },
+        "refund_requested": {
+          "agrees_with_emulator": true,
+          "agrees_with_jev": true
+        }
+      }
+    },
+    "run_config": {
+      "model": "gpt-4o-mini",
+      "base_url": "https://api.openai.com/v1",
+      "structured_outputs": true,
+      "llm_answer_mode": "probabilities",
+      "max_retries": 2,
+      "timeout_seconds": 120.0,
+      "api": "chat_completions",
+      "temperature": null
+    },
+    "llm_attempts": [
+      {
+        "messages": [
+          {
+            "role": "system",
+            "content": "system-one-adapter system prompt"
+          },
+          {
+            "role": "user",
+            "content": "I was charged twice on my invoice."
+          }
+        ],
+        "debug_info": {
+          "model_name": "gpt-4o-mini",
+          "finish_reason": "stop"
+        }
+      }
+    ]
+  },
+  "runtime": {
+    "duration_ms": 184
+  },
+  "provenance": {
+    "providers": [],
+    "versions": {
+      "emulator": "1.0.0",
+      "api": "1.0.0"
+    },
+    "timings": {
+      "request_validation_ms": 12,
+      "emulator_ms": 62,
+      "jev_ms": 71,
+      "independent_openai_ms": 43,
+      "fidelity_ms": 5,
+      "ai_judge_ms": 8
+    }
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "execution_id": "run_cmp0001a2b3c",
+  "created_at": "2026-09-21T10:00:00Z",
+  "request_hash": "sha256:e2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2e",
+  "mode": "compare",
+  "status": "completed",
+  "request": {
+    "state": {
+      "message": "I was charged twice on my invoice."
+    },
+    "questions": {
+      "request_type": {
+        "type": "choice",
+        "instructions": "Classify this request.",
+        "criteria": {
+          "billing": "Billing issue",
+          "technical": "Technical issue",
+          "sales": "Sales request"
+        }
+      },
+      "urgency": {
+        "type": "score",
+        "criteria": [
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "refund_requested": {
+        "type": "noul",
+        "criteria": {
+          "true": "The customer requests a refund.",
+          "false": "The customer does not request a refund."
+        }
+      }
+    },
+    "model": "gpt-4o-mini"
+  },
+  "emulator": {
+    "status": "success",
+    "model": "jev-emulator",
+    "result": {
+      "answers": {
+        "request_type": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 0.875,
+          "probabilities": {
+            "billing": 0.75,
+            "technical": 0.125,
+            "sales": 0.125
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.82,
+          "confidence": 0.75,
+          "legend": {
+            "0": "low",
+            "1": "medium",
+            "2": "high"
+          },
+          "probabilities": {
+            "0": 0.1,
+            "1": 0.2,
+            "2": 0.7
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.082
+        }
+      },
+      "usage": {
+        "input_tokens": 120,
+        "output_tokens": 45
+      }
+    }
+  },
+  "jev": {
+    "status": "success",
+    "model": "jev-latest",
+    "result": {
+      "answers": {
+        "request_type": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 0.625,
+          "probabilities": {
+            "billing": 0.625,
+            "technical": 0.125,
+            "sales": 0.25
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.64,
+          "confidence": 0.625,
+          "legend": {
+            "0": "low",
+            "1": "medium",
+            "2": "high"
+          },
+          "probabilities": {
+            "0": 0.15,
+            "1": 0.25,
+            "2": 0.6
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.119
+        }
+      },
+      "usage": {
+        "input_tokens": 210,
+        "output_tokens": 64
+      }
+    }
+  },
+  "comparison": {
+    "overall_fidelity": 0.95,
+    "questions": {
+      "request_type": {
+        "primitive": "choice",
+        "fidelity": 0.9,
+        "aligned": true,
+        "components": {
+          "decision_match": true,
+          "confidence_delta": 0.25,
+          "distribution_similarity": 0.833
+        }
+      },
+      "urgency": {
+        "primitive": "score",
+        "fidelity": 0.95,
+        "aligned": true,
+        "components": {
+          "score_delta": 0.18,
+          "max_score": 2,
+          "score_similarity": 0.91,
+          "distribution_similarity": 0.85,
+          "confidence_delta": 0.125,
+          "emulator_dominant_level": "2",
+          "jev_dominant_level": "2"
+        }
+      },
+      "refund_requested": {
+        "primitive": "noul",
+        "fidelity": 0.963,
+        "aligned": true,
+        "components": {
+          "probability_delta": 0.037,
+          "emulator_midpoint_category": -1,
+          "jev_midpoint_category": -1
+        }
+      }
+    }
+  },
+  "runtime": {
+    "duration_ms": 88
+  },
+  "provenance": {
+    "providers": [],
+    "versions": {
+      "emulator": "1.0.0",
+      "api": "1.0.0"
+    },
+    "timings": {
+      "request_validation_ms": 12,
+      "emulator_ms": 62,
+      "jev_ms": 71,
+      "fidelity_ms": 5
+    }
+  }
+}

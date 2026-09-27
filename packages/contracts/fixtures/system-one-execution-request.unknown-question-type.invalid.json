@@ -1,0 +1,17 @@
+{
+  "system_one": {
+    "state": {
+      "message": "I was charged twice on my invoice."
+    },
+    "questions": {
+      "request_type": {
+        "type": "classification",
+        "criteria": {
+          "billing": "Billing issue",
+          "technical": "Technical issue"
+        }
+      }
+    }
+  },
+  "mode": "emulator"
+}

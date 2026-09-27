@@ -1,0 +1,12 @@
+{
+  "state": null,
+  "questions": {
+    "refund_requested": {
+      "type": "noul",
+      "criteria": {
+        "true": "The customer requests a refund.",
+        "false": "The customer does not request a refund."
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+// Canonical SystemOneRequest example from plan section 5.
+// Keep in sync with packages/contracts/fixtures/system-one-request.valid.json
+// (the contract test fixture this sample mirrors).
+export const SAMPLE_SYSTEM_ONE_REQUEST = `{
+  "state": {
+    "message": "I was charged twice on my invoice."
+  },
+  "questions": {
+    "request_type": {
+      "type": "choice",
+      "instructions": "Classify this request.",
+      "criteria": {
+        "billing": "Billing issue",
+        "technical": "Technical issue",
+        "sales": "Sales request"
+      }
+    },
+    "urgency": {
+      "type": "score",
+      "criteria": ["low", "medium", "high"]
+    },
+    "refund_requested": {
+      "type": "noul",
+      "criteria": {
+        "true": "The customer requests a refund.",
+        "false": "The customer does not request a refund."
+      }
+    }
+  }
+}`

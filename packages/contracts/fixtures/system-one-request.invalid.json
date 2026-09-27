@@ -1,0 +1,9 @@
+{
+  "state": 42,
+  "questions": {
+    "urgency": {
+      "type": "score",
+      "criteria": ["only-one-level"]
+    }
+  }
+}

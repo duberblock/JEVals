@@ -1,0 +1,13 @@
+{
+  "system_one": {
+    "state": {
+      "message": "I was charged twice on my invoice."
+    },
+    "questions": {
+      "refund_requested": {
+        "type": "noul"
+      }
+    }
+  },
+  "mode": "fast"
+}

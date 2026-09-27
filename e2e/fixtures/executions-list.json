@@ -1,0 +1,70 @@
+{
+  "items": [
+    {
+      "execution_id": "run_e2e0001a2b3c",
+      "created_at": "2026-09-21T10:00:00Z",
+      "request_hash": "sha256:e2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee",
+      "mode": "compare-and-evaluate",
+      "status": "completed",
+      "operational_status": "completed",
+      "question_count": 3,
+      "overall_fidelity": 0.95,
+      "aligned_questions": 3,
+      "semantic_divergence": "none",
+      "duration_ms": 184
+    },
+    {
+      "execution_id": "run_e2e0002parta1",
+      "created_at": "2026-09-21T09:12:00Z",
+      "request_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mode": "compare",
+      "status": "completed",
+      "operational_status": "partial",
+      "question_count": 3,
+      "overall_fidelity": null,
+      "aligned_questions": null,
+      "semantic_divergence": null,
+      "duration_ms": 310
+    },
+    {
+      "execution_id": "run_e2e0003partb2",
+      "created_at": "2026-09-20T18:03:00Z",
+      "request_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "mode": "compare-and-evaluate",
+      "status": "completed",
+      "operational_status": "partial",
+      "question_count": 3,
+      "overall_fidelity": 0.94,
+      "aligned_questions": 2,
+      "semantic_divergence": "minor",
+      "duration_ms": 9000
+    },
+    {
+      "execution_id": "run_e2e0004faile",
+      "created_at": "2026-09-19T16:44:00Z",
+      "request_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "mode": "emulator",
+      "status": "failed",
+      "operational_status": "failed",
+      "question_count": 2,
+      "overall_fidelity": null,
+      "aligned_questions": null,
+      "semantic_divergence": null,
+      "duration_ms": 118
+    },
+    {
+      "execution_id": "run_e2e0005old01",
+      "created_at": "2026-09-18T12:00:00Z",
+      "request_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "mode": "emulator",
+      "status": "completed",
+      "operational_status": "completed",
+      "question_count": 3,
+      "overall_fidelity": null,
+      "aligned_questions": null,
+      "semantic_divergence": null,
+      "duration_ms": 221
+    }
+  ],
+  "next_cursor": null
+}

@@ -1,0 +1,8 @@
+{
+  "valid": true,
+  "questions": [
+    { "name": "request_type", "primitive": "choice" },
+    { "name": "urgency", "primitive": "score" },
+    { "name": "refund_requested", "primitive": "noul" }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "execution_id": "run_emu0001a2b3c",
+  "created_at": "2026-09-21T10:00:00Z",
+  "request_hash": "sha256:e2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2ee2e",
+  "mode": "emulator",
+  "status": "completed",
+  "request": {
+    "state": {
+      "message": "I was charged twice on my invoice."
+    },
+    "questions": {
+      "request_type": {
+        "type": "choice",
+        "instructions": "Classify this request.",
+        "criteria": {
+          "billing": "Billing issue",
+          "technical": "Technical issue",
+          "sales": "Sales request"
+        }
+      },
+      "urgency": {
+        "type": "score",
+        "criteria": [
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "refund_requested": {
+        "type": "noul",
+        "criteria": {
+          "true": "The customer requests a refund.",
+          "false": "The customer does not request a refund."
+        }
+      }
+    },
+    "model": "gpt-4o-mini"
+  },
+  "emulator": {
+    "status": "success",
+    "model": "jev-emulator",
+    "result": {
+      "answers": {
+        "request_type": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 0.875,
+          "probabilities": {
+            "billing": 0.75,
+            "technical": 0.125,
+            "sales": 0.125
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "score": 1.82,
+          "confidence": 0.75,
+          "legend": {
+            "0": "low",
+            "1": "medium",
+            "2": "high"
+          },
+          "probabilities": {
+            "0": 0.1,
+            "1": 0.2,
+            "2": 0.7
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.082
+        }
+      },
+      "usage": {
+        "input_tokens": 120,
+        "output_tokens": 45
+      }
+    }
+  },
+  "runtime": {
+    "duration_ms": 74
+  },
+  "provenance": {
+    "providers": [],
+    "versions": {
+      "emulator": "1.0.0",
+      "api": "1.0.0"
+    },
+    "timings": {
+      "request_validation_ms": 12,
+      "emulator_ms": 62
+    }
+  }
+}
