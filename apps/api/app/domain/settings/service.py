@@ -56,6 +56,7 @@ def _env_layer() -> dict[str, dict[str, object]]:
             "endpoint": settings.judge_base_url or shared_llm_base,
             "model": settings.judge_model or settings.openai_model,
             "api_key": settings.judge_api_key or settings.openai_api_key,
+            "structured_outputs": settings.openai_structured_outputs,
         },
         "independent": {
             "endpoint": settings.independent_base_url or shared_llm_base,
@@ -149,7 +150,7 @@ def public_view(providers: dict[str, EffectiveProvider]) -> dict[str, dict]:
                 "apiKey": _source(provider.ui_api_key, provider.api_key),
             },
         }
-        if name == "independent":
+        if name in ("judge", "independent"):
             entry["structuredOutputs"] = provider.structured_outputs
             entry["structuredOutputsHere"] = provider.ui_structured_outputs
         if name == "emulator":

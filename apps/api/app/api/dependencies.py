@@ -131,6 +131,11 @@ def get_judge_provider() -> JudgeProvider | None:
         base_url=config.endpoint or settings.openai_base_url,
         api_key=config.api_key,
         model=config.model,
+        structured_first=(
+            config.structured_outputs
+            if config.structured_outputs is not None
+            else True
+        ),
     )
 
 

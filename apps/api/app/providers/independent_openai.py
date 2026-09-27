@@ -139,30 +139,49 @@ class IndependentOpenaiClient:
         # built from model strings), so the wrapper — the caller here — must
         # close this provider itself on shutdown (fix-forward F1).
         self._wired_provider: AsyncProvider | None = None
-        resolved: _AsyncAdapterClient
-        if adapter is None:
-            llm: AsyncProvider = provider or _TimeoutBoundedAsyncOpenAIProvider(
-                model_name=model,
-                base_url=self.base_url,
-                api_key=api_key,
-                api="chat_completions",
-                timeout=timeout,
-            )
-            resolved = AsyncSystemOneAdapterClient(
-                structured_outputs=structured_outputs,
-                llm_answer_mode="probabilities",
-                normalize_probabilities=True,
-                n_retry_malformed_structure=1,
-                retry=RetryPolicy(
-                    max_retries=2,
-                    timeout=INDEPENDENT_OPENAI_RETRY_BUDGET_SECONDS,
-                ),
-                model=llm,
-            )
-            self._wired_provider = llm
-        else:
-            resolved = adapter
+        # The fallback adapter (prompted mode) is wired lazily on the first
+        # native-mode structural failure — see execute().
+        self._fallback_adapter: _AsyncAdapterClient | None = None
+        self._wired_fallback_provider: AsyncProvider | None = None
+        self._injected_adapter = adapter is not None
+        # The construction seams stay available so the prompted fallback
+        # reuses the SAME injected LLM (hermetic tests) instead of wiring a
+        # real network client.
+        self._seam_adapter = adapter
+        self._seam_provider = provider
+        resolved, wired = self._build_adapter(structured_outputs, adapter, provider)
+        self._wired_provider = wired
         self._adapter = resolved
+
+    def _build_adapter(
+        self,
+        structured: bool,
+        adapter: _AsyncAdapterClient | None = None,
+        provider: AsyncProvider | None = None,
+    ) -> tuple[_AsyncAdapterClient, AsyncProvider | None]:
+        # Wire one adapter in the given mode. Returns (adapter, wired_llm);
+        # the caller owns closing a wired LLM (fix-forward F1).
+        if adapter is not None:
+            return adapter, None
+        llm: AsyncProvider = provider or _TimeoutBoundedAsyncOpenAIProvider(
+            model_name=self.model,
+            base_url=self.base_url,
+            api_key=self.api_key,
+            api="chat_completions",
+            timeout=self._timeout,
+        )
+        built = AsyncSystemOneAdapterClient(
+            structured_outputs=structured,
+            llm_answer_mode="probabilities",
+            normalize_probabilities=True,
+            n_retry_malformed_structure=1,
+            retry=RetryPolicy(
+                max_retries=2,
+                timeout=INDEPENDENT_OPENAI_RETRY_BUDGET_SECONDS,
+            ),
+            model=llm,
+        )
+        return built, llm
 
     async def execute(self, request: JsonObject) -> IndependentOpenaiPrediction:
         # §11: the independent call receives ONLY the original request's
@@ -176,6 +195,49 @@ class IndependentOpenaiClient:
         try:
             response = await self._adapter.system_one(state, questions)
         except TypeSafeError as error:
+            # Compatibility ladder, one rung: providers that do not enforce
+            # json_schema strict mode (GLM at z.ai and friends) fail native
+            # mode with malformed structure — the questions lived only in
+            # the schema. ONE automatic retry in prompted mode (schema in
+            # the prompt) makes the leg work for OpenAI AND GLM without
+            # touching anything. Only structural failures climb (auth,
+            # rate limits and timeouts surface immediately); injected test
+            # adapters never climb.
+            debug = getattr(error, "debug", None) or {}
+            reasons = debug.get("retry_reasons") or []
+            structural = any(
+                "malformed_structure" in str(reason) for reason in reasons
+            )
+            if (
+                self._structured_outputs
+                and structural
+                and not self._injected_adapter
+                and self._fallback_adapter is None
+            ):
+                self._fallback_adapter, self._wired_fallback_provider = (
+                    self._build_adapter(
+                        structured=False, adapter=self._seam_adapter, provider=self._seam_provider
+                    )
+                )
+                try:
+                    response = await self._fallback_adapter.system_one(state, questions)
+                except TypeSafeError as fallback_error:
+                    fallback_debug = getattr(fallback_error, "debug", None) or {}
+                    raise IndependentOpenaiProviderError(
+                        message="The independent LLM prediction failed.",
+                        run_config=self.run_config(),
+                        llm_attempts=_redact_secrets(
+                            (debug.get("llm_attempts") or [])
+                            + (fallback_debug.get("llm_attempts") or [])
+                        ),
+                        retry_reasons=_redact_secrets(
+                            ["native-mode structural failure; retried in prompted mode"]
+                            + list(reasons)
+                            + list(fallback_debug.get("retry_reasons") or [])
+                        ),
+                    ) from fallback_error
+                return await self._finish(response, request)
+
             # Covers the adapter's terminal outcomes, including the synthetic
             # HTTP 200 TypeSafeAPIResponseValidationError raised when output
             # is still malformed after every corrective retry: the adapter
@@ -201,6 +263,9 @@ class IndependentOpenaiClient:
                 message="The independent LLM prediction could not be prepared."
             ) from error
 
+        return await self._finish(response, request)
+
+    async def _finish(self, response: Any, request: JsonObject) -> IndependentOpenaiPrediction:
         data = response.model_dump(mode="json")
         try:
             result = SystemOneResult.model_validate(
@@ -267,6 +332,11 @@ class IndependentOpenaiClient:
         wired = self._wired_provider
         if wired is not None and isinstance(wired, SupportsAsyncClose):
             await wired.aclose()
+        if self._fallback_adapter is not None:
+            await self._fallback_adapter.aclose()
+        wired_fallback = self._wired_fallback_provider
+        if wired_fallback is not None and isinstance(wired_fallback, SupportsAsyncClose):
+            await wired_fallback.aclose()
 
 
 def _redact_secrets(value: Any) -> Any:

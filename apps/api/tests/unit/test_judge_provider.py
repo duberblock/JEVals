@@ -548,3 +548,26 @@ def test_non_400_failures_never_escalate():
             REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON
         ))
     assert len(captured) == 1
+
+
+def test_structured_first_false_goes_straight_to_prompted():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return wire_response(JUDGE_EVALUATION)
+
+    client = JudgeClient(
+        base_url="https://openai.test/v1",
+        api_key="k",
+        model="glm-5.3",
+        structured_first=False,
+        transport=httpx.MockTransport(handler),
+    )
+    outcome = asyncio.run(client.evaluate(REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON))
+
+    assert len(captured) == 1
+    body = json.loads(captured[0].read())
+    assert "response_format" not in body
+    assert "max_completion_tokens" in body
+    assert outcome.configuration["compatibility"] == "prompted"

@@ -103,7 +103,7 @@ function ProviderCard({
           [name]: {
             endpoint: endpointValue || null,
             model: model || null,
-            ...(name === 'independent' ? { structured_outputs: structured } : {}),
+            ...(name === 'independent' || name === 'judge' ? { structured_outputs: structured } : {}),
             ...(clearKey ? { api_key: null } : apiKey ? { api_key: apiKey } : {}),
           },
         }),
@@ -188,7 +188,7 @@ function ProviderCard({
             value={model}
           />
         </div>
-        {name === 'independent' ? (
+        {name === 'independent' || name === 'judge' ? (
           <div className="grid gap-1 sm:col-span-2">
             <label className="flex items-center gap-2 text-sm font-medium">
               <input

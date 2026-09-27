@@ -105,7 +105,7 @@ describe('SettingsView', () => {
 
     await waitFor(() => expect(puts).toHaveLength(1))
     expect(puts[0]).toEqual({
-      judge: { endpoint: 'http://localhost:11434/v1', model: 'qwen3:8b' },
+      judge: { endpoint: 'http://localhost:11434/v1', model: 'qwen3:8b', structured_outputs: true },
     })
 
     // Now type a key and save again — only then does api_key travel.
@@ -113,7 +113,7 @@ describe('SettingsView', () => {
     fireEvent.click(within(screen.getByTestId('settings-card-judge')).getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(puts).toHaveLength(2))
     expect(puts[1]).toEqual({
-      judge: { endpoint: 'http://localhost:11434/v1', model: 'qwen3:8b', api_key: 'ollama' },
+      judge: { endpoint: 'http://localhost:11434/v1', model: 'qwen3:8b', structured_outputs: true, api_key: 'ollama' },
     })
   })
 

@@ -474,3 +474,60 @@ def test_get_independent_openai_provider_honors_the_structured_outputs_seam(tmp_
     provider = get_independent_openai_provider()
 
     assert provider._adapter.structured_outputs is False
+
+
+def test_native_structural_failure_falls_back_to_prompted_mode_once():
+    """The GLM ladder: a provider that cannot honor json_schema strict mode
+    answers PROSE (the adapter classifies it malformed_structure after its
+    corrective retries) — one automatic prompted retry (schema in the
+    prompt) lands the prediction."""
+    fake = FakeAsyncProvider(text=json.dumps(FAKE_LLM_OUTPUT))
+    original_request = fake.request
+    native_prose = {"n": 0}
+
+    async def prose_until_prompted(messages, *, schema, structured):
+        # Native attempts get prose — exactly what glm-5.3 does when the
+        # questions live only in the schema. The prompted fallback answers.
+        if structured:
+            native_prose["n"] += 1
+            return ProviderResult(
+                text="No questions were supplied for this document.",
+                input_tokens=10,
+                output_tokens=5,
+            )
+        return await original_request(messages, schema=schema, structured=structured)
+
+    fake.request = prose_until_prompted  # type: ignore[method-assign]
+
+    client = IndependentOpenaiClient(
+        base_url="https://llm.test/v1",
+        api_key="k",
+        model="glm-5.3",
+        structured_outputs=True,
+        provider=fake,
+    )
+    prediction = asyncio.run(client.execute(REQUEST))
+
+    # Native attempts answered prose (the adapter's corrective retry
+    # included); the prompted retry is the one that lands.
+    assert native_prose["n"] >= 1
+    assert [c["structured"] for c in fake.calls] == [False]
+    assert prediction.result.model == "gpt-4o-mini"
+    asyncio.run(client.aclose())
+
+
+def test_non_structural_failures_never_fall_back():
+    hard = TypeSafeError("LLM returned HTTP 401 for key llm-secret-key")
+    fake = FakeAsyncProvider(error=hard)
+
+    client = IndependentOpenaiClient(
+        base_url="https://llm.test/v1",
+        api_key="k",
+        model="glm-5.3",
+        structured_outputs=True,
+        provider=fake,
+    )
+    with pytest.raises(IndependentOpenaiProviderError):
+        asyncio.run(client.execute(REQUEST))
+    assert len(fake.calls) == 1
+    asyncio.run(client.aclose())

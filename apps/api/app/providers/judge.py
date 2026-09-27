@@ -136,9 +136,15 @@ class JudgeClient:
         base_url: str,
         api_key: str,
         model: str,
+        structured_first: bool = True,
         timeout: float = JUDGE_TIMEOUT_SECONDS,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
+        # structured_first=False (the settings UI's "native structured
+        # outputs" toggle, off) skips BOTH json_schema attempts — the judge
+        # goes straight to the prompted rung (the schema lives in the v2
+        # prompt), for providers that mishandle strict mode.
+        self._structured_first = structured_first
         self.base_url = base_url.rstrip("/")
         self.model = model
         self._timeout_seconds = timeout
@@ -226,6 +232,8 @@ class JudgeClient:
         judge_input = build_judge_input(request, emulator_result, jev_result, comparison)
         output_schema = JudgeEvaluation.model_json_schema()
         attempts = self._request_ladder(judge_input, output_schema)
+        if not self._structured_first:
+            attempts = attempts[-1:]
         response = None
         configuration: JsonObject = attempts[-1][1]
         for index, (body, attempt_configuration) in enumerate(attempts):

@@ -99,6 +99,8 @@ def test_get_with_nothing_configured_shows_the_honest_empty_view(client):
         "endpoint": "https://api.openai.com/v1",
         **not_configured,
         "sources": {"endpoint": "env", "model": "none", "apiKey": "none"},
+        "structuredOutputs": True,
+        "structuredOutputsHere": False,
     }
     assert providers["independent"] == {
         "endpoint": "https://api.openai.com/v1",
