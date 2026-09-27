@@ -34,13 +34,6 @@ type SettingsResponse = {
 
 const PROVIDER_ORDER: ProviderName[] = ['emulator', 'jev', 'judge', 'independent']
 
-function sourceWord(source: string, dictionary: Dictionary['settings']): string {
-  if (source === 'default') return `(${dictionary.fromDefault})`
-  if (source === 'ui') return `(${dictionary.fromUi})`
-  if (source === 'env') return `(${dictionary.fromEnv})`
-  return `(${dictionary.keyNotSet})`
-}
-
 type CardState = 'idle' | 'saving' | 'saved' | 'error'
 
 // What each provider genuinely requires to become available (mirrors the
@@ -130,6 +123,7 @@ function ProviderCard({
         <h2 className="text-base font-semibold">{labels.name}</h2>
         <p className="text-sm text-muted-foreground">{labels.description}</p>
       </div>
+      <CardHelp dictionary={dictionary} name={name} />
       {demo ? (
         <div className="mb-3 flex flex-wrap gap-2" data-testid={`settings-${name}-presets`}>
           {(
@@ -241,21 +235,17 @@ function ProviderCard({
       <p className="mt-2 text-xs text-muted-foreground" data-testid={`settings-${name}-availability`}>
         {view.available ? `✓ ${dictionary.available}` : `✗ ${dictionary.unavailable}`}
       </p>
-      {view.sources ? (
-        <p className="text-xs text-muted-foreground" data-testid={`settings-${name}-sources`}>
-          {`${dictionary.sourceLine}: ${dictionary.endpoint} ${sourceWord(view.sources.endpoint, dictionary)} · ${dictionary.model} ${sourceWord(view.sources.model, dictionary)} · ${dictionary.apiKey} ${sourceWord(view.sources.apiKey, dictionary)}`}
-        </p>
-      ) : null}
+
     </section>
   )
 }
 
-function HelpDisclosure({ dictionary }: { dictionary: Dictionary['settings'] }) {
+function CardHelp({ dictionary, name }: { dictionary: Dictionary['settings']; name: ProviderName }) {
   const [open, setOpen] = useState(false)
   const triggerId = useId()
   const regionId = useId()
   return (
-    <div className="mt-4" data-testid="settings-help">
+    <div className="mb-3" data-testid={`settings-${name}-help`}>
       <Button
         aria-controls={regionId}
         aria-expanded={open}
@@ -265,23 +255,16 @@ function HelpDisclosure({ dictionary }: { dictionary: Dictionary['settings'] }) 
         type="button"
         variant="ghost"
       >
-        {dictionary.helpTitle}
+        {dictionary.helpOpen}
       </Button>
       {open ? (
         <div
           aria-labelledby={triggerId}
-          className="mt-2 space-y-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground"
+          className="mt-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground"
           id={regionId}
           role="region"
         >
-          {(['emulator', 'jev', 'judge', 'independent'] as const).map((name) => (
-            <p key={name}>
-              <span className="font-medium text-foreground">
-                {dictionary.providers[name].name}:
-              </span>{' '}
-              {dictionary.help[name]}
-            </p>
-          ))}
+          {dictionary.help[name]}
         </div>
       ) : null}
     </div>
@@ -316,7 +299,6 @@ export function SettingsView() {
         {dictionary.settings.title}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">{dictionary.settings.subtitle}</p>
-      <HelpDisclosure dictionary={dictionary.settings} />
       <div className="mt-6 grid gap-4">
         {failed ? (
           <p className="text-sm text-destructive" data-testid="settings-error">

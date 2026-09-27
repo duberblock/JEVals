@@ -87,14 +87,9 @@ describe('SettingsView', () => {
     const keyInput = emulator.getByLabelText('API key') as HTMLInputElement
     expect(keyInput.value).toBe('')
     expect(keyInput.type).toBe('password')
-    // The configuration is VISIBLE: preset options + per-field provenance.
+    // The configuration is VISIBLE: preset options; each card carries its
+    // own collapsible help (collapsed by default).
     expect(emulator.getByTestId('settings-emulator-presets')).toBeInTheDocument()
-    expect(screen.getByTestId('settings-jev-sources')).toHaveTextContent(
-      'Endpoint (environment)'
-    )
-    expect(emulator.getByTestId('settings-emulator-sources')).toHaveTextContent(
-      'Endpoint (configured here)'
-    )
   })
 
   it('saves endpoint, model and a typed key; an empty key is not sent', async () => {
@@ -213,13 +208,17 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   render(<SettingsView />)
   await screen.findByTestId('settings-card-independent')
 
-  // The guide is a §38-style disclosure: collapsed by default.
-  const helpTrigger = screen.getByRole('button', { name: 'How to fill this form' })
-  expect(helpTrigger).toHaveAttribute('aria-expanded', 'false')
-  expect(screen.queryByTestId('settings-help-region')).not.toBeInTheDocument()
-  fireEvent.click(helpTrigger)
-  expect(helpTrigger).toHaveAttribute('aria-expanded', 'true')
+  // Per-card help disclosures: collapsed by default, open with the
+  // card's own guidance.
+  const helps = screen.getAllByRole('button', { name: 'View guide' })
+  expect(helps).toHaveLength(4)
+  for (const trigger of helps) {
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  }
+  fireEvent.click(within(screen.getByTestId('settings-card-emulator')).getByRole('button', { name: 'View guide' }))
   expect(screen.getByText(/default endpoint is already set/i)).toBeInTheDocument()
+  fireEvent.click(within(screen.getByTestId('settings-card-independent')).getByRole('button', { name: 'View guide' }))
+  expect(screen.getByText(/avoid typing it twice/i)).toBeInTheDocument()
 
   // Model inputs teach with example placeholders.
   const judge = within(screen.getByTestId('settings-card-judge'))
