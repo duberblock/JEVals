@@ -237,3 +237,20 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   )
   expect(posts.some((p) => p.url.endsWith('/copy-judge'))).toBe(true)
 })
+
+it('the structured-outputs toggle rides the independent card and saves with it', async () => {
+  const { puts } = stubFetch()
+
+  render(<SettingsView />)
+  const independent = within(await screen.findByTestId('settings-card-independent'))
+
+  const toggle = independent.getByTestId('settings-independent-structured') as HTMLInputElement
+  expect(toggle.checked).toBe(true)
+  fireEvent.click(toggle)
+  fireEvent.click(independent.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() => expect(puts).toHaveLength(1))
+  expect(puts[0]).toMatchObject({
+    independent: { structured_outputs: false },
+  })
+})

@@ -25,9 +25,11 @@ class EffectiveProvider:
     endpoint: str | None
     model: str | None
     api_key: str | None
+    structured_outputs: bool | None = None
     ui_endpoint: bool = False
     ui_model: bool = False
     ui_api_key: bool = False
+    ui_structured_outputs: bool = False
 
     @property
     def available(self) -> bool:
@@ -36,7 +38,7 @@ class EffectiveProvider:
         return True
 
 
-def _env_layer() -> dict[str, dict[str, str | None]]:
+def _env_layer() -> dict[str, dict[str, object]]:
     settings = get_settings()
     shared_llm_base = settings.openai_base_url
     return {
@@ -59,6 +61,7 @@ def _env_layer() -> dict[str, dict[str, str | None]]:
             "endpoint": settings.independent_base_url or shared_llm_base,
             "model": settings.independent_model or settings.openai_model,
             "api_key": settings.independent_api_key or settings.openai_api_key,
+            "structured_outputs": settings.openai_structured_outputs,
         },
     }
 
@@ -79,16 +82,31 @@ def effective_providers(session: Session) -> dict[str, EffectiveProvider]:
     for name in PROVIDERS:
         base = env[name]
         stored = overrides[name]
+        base_api_key = base["api_key"] if isinstance(base["api_key"], str) else None
         api_key = (
             decrypt_secret(stored["api_key"]) if stored["api_key"] else None
-        ) or base["api_key"]
+        ) or base_api_key
+        base_endpoint = base["endpoint"] if isinstance(base["endpoint"], str) else None
+        base_model = base["model"] if isinstance(base["model"], str) else None
+        raw_base_structured = base.get("structured_outputs")
+        base_structured: bool | None = (
+            raw_base_structured if isinstance(raw_base_structured, bool) else None
+        )
+        raw_stored_structured = stored.get("structured_outputs")
+        stored_structured: bool | None = (
+            raw_stored_structured if isinstance(raw_stored_structured, bool) else None
+        )
         result[name] = EffectiveProvider(
-            endpoint=stored["endpoint"] or base["endpoint"],
-            model=stored["model"] or base["model"],
+            endpoint=stored["endpoint"] or base_endpoint,
+            model=stored["model"] or base_model,
             api_key=api_key,
+            structured_outputs=stored_structured
+            if stored_structured is not None
+            else base_structured,
             ui_endpoint=stored["endpoint"] is not None,
             ui_model=stored["model"] is not None,
             ui_api_key=stored["api_key"] is not None,
+            ui_structured_outputs=raw_stored_structured is not None,
         )
     return result
 
@@ -131,6 +149,9 @@ def public_view(providers: dict[str, EffectiveProvider]) -> dict[str, dict]:
                 "apiKey": _source(provider.ui_api_key, provider.api_key),
             },
         }
+        if name == "independent":
+            entry["structuredOutputs"] = provider.structured_outputs
+            entry["structuredOutputsHere"] = provider.ui_structured_outputs
         if name == "emulator":
             # The preset selector needs the factory default client-side.
             entry["defaultEndpoint"] = DEFAULT_EMULATOR_URL

@@ -3,7 +3,8 @@
 Shape (single row, id=1, JSON document in a TEXT column)::
 
     {
-      "emulator":     {"endpoint": str|null, "model": str|null, "api_key": <token>|null},
+      "emulator":     {"endpoint": str|null, "model": str|null, "api_key": <token>|null,
+                       "structured_outputs": bool|null},
       "jev":          {"endpoint": str|null, "model": str|null, "api_key": <token>|null},
       "judge":        {"endpoint": str|null, "model": str|null, "api_key": <token>|null},
       "independent":  {"endpoint": str|null, "model": str|null, "api_key": <token>|null}
@@ -25,16 +26,19 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 PROVIDERS = ("emulator", "jev", "judge", "independent")
-FIELDS = ("endpoint", "model", "api_key")
+# structured_outputs: tri-state per provider (None = inherit the
+# environment; True/False = explicit UI override). Only the independent
+# LLM leg consumes it today (native JSON Schema vs prompted schema).
+FIELDS = ("endpoint", "model", "api_key", "structured_outputs")
 
 EMPTY_SETTINGS: dict[str, dict[str, str | None]] = {
     name: {"endpoint": None, "model": None, "api_key": None} for name in PROVIDERS
 }
 
 
-def _normalize(value: Any) -> str | None:
-    if value is None:
-        return None
+def _normalize(value: Any) -> Any:
+    if value is None or isinstance(value, bool):
+        return value
     stripped = str(value).strip()
     return stripped or None
 

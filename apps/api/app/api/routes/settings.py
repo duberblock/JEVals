@@ -17,11 +17,14 @@ router = APIRouter(prefix="/api/v1/settings", tags=["settings"])
 class ProviderSettingsIn(BaseModel):
     """One provider's patch: fields present are replaced (null/"" clears),
     absent fields stay as stored. ``api_key`` arrives in plaintext over the
-    authenticated channel and is encrypted BEFORE anything is persisted."""
+    authenticated channel and is encrypted BEFORE anything is persisted.
+    ``structured_outputs`` is a tri-state (null clears to the environment
+    default; true/false are explicit overrides)."""
 
     endpoint: str | None = None
     model: str | None = None
     api_key: str | None = None
+    structured_outputs: bool | None = None
 
 
 class SettingsIn(BaseModel):
@@ -44,18 +47,20 @@ def put_settings(
     session: Annotated[Session, Depends(get_session)],
 ) -> dict:
     patch = payload.model_dump(exclude_none=False)
-    stored_patch: dict[str, dict[str, str | None]] = {}
+    stored_patch: dict[str, dict[str, object]] = {}
     for name in store.PROVIDERS:
         provider_patch = patch.get(name)
         if provider_patch is None:
             continue
-        fields: dict[str, str | None] = {}
+        fields: dict[str, object] = {}
         for field in store.FIELDS:
             if field in provider_patch and provider_patch[field] is not None:
                 value = provider_patch[field]
                 fields[field] = (
                     encrypt_secret(value) if field == "api_key" and value else value
                 )
+                if field == "structured_outputs":
+                    fields[field] = bool(value)
             elif field in provider_patch:
                 # Explicit null clears the stored override.
                 fields[field] = None

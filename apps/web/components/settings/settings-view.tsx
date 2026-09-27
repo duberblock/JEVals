@@ -28,6 +28,7 @@ type ProviderView = {
   configuredHere: { endpoint: boolean; model: boolean; apiKey: boolean }
   sources?: { endpoint: string; model: string; apiKey: string }
   defaultEndpoint?: string
+  structuredOutputs?: boolean
 }
 
 type SettingsResponse = {
@@ -71,6 +72,7 @@ function ProviderCard({
 }) {
   const required = REQUIRED[name]
   const [endpoint, setEndpoint] = useState(view.endpoint ?? '')
+  const [structured, setStructured] = useState(view.structuredOutputs ?? true)
   const [model, setModel] = useState(view.model ?? '')
   const [apiKey, setApiKey] = useState('')
   const [state, setState] = useState<CardState>('idle')
@@ -101,6 +103,7 @@ function ProviderCard({
           [name]: {
             endpoint: endpointValue || null,
             model: model || null,
+            ...(name === 'independent' ? { structured_outputs: structured } : {}),
             ...(clearKey ? { api_key: null } : apiKey ? { api_key: apiKey } : {}),
           },
         }),
@@ -185,6 +188,21 @@ function ProviderCard({
             value={model}
           />
         </div>
+        {name === 'independent' ? (
+          <div className="grid gap-1 sm:col-span-2">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                checked={structured}
+                className="size-4"
+                data-testid={`settings-${name}-structured`}
+                onChange={(event) => setStructured(event.target.checked)}
+                type="checkbox"
+              />
+              {dictionary.structuredOutputs}
+            </label>
+            <p className="text-xs text-muted-foreground">{dictionary.structuredOutputsHint}</p>
+          </div>
+        ) : null}
         <div className="grid gap-1 sm:col-span-2">
           <label className="text-sm font-medium" htmlFor={`settings-${name}-api-key`}>
             {dictionary.apiKey}

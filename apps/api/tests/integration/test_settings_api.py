@@ -9,6 +9,8 @@ stored database document — the row holds a Fernet token and GET reports
 import json
 
 import pytest
+
+from app.core.config import reset_settings_cache
 from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
@@ -102,6 +104,10 @@ def test_get_with_nothing_configured_shows_the_honest_empty_view(client):
         "endpoint": "https://api.openai.com/v1",
         **not_configured,
         "sources": {"endpoint": "env", "model": "none", "apiKey": "none"},
+        # The structured-outputs mode defaults to native (the environment
+        # layer) until the UI overrides it.
+        "structuredOutputs": True,
+        "structuredOutputsHere": False,
     }
 
 
@@ -275,3 +281,29 @@ def test_copy_judge_with_nothing_configured_answers_a_problem(client):
 
     assert response.status_code == 400
     assert response.json()["detail"] == "The Judge has no configuration to copy."
+
+
+def test_structured_outputs_is_a_ui_overridable_tri_state(client, monkeypatch):
+    # Default: native (from the environment layer).
+    view = client.get("/api/v1/settings").json()["providers"]["independent"]
+    assert view["structuredOutputs"] is True
+    assert view["structuredOutputsHere"] is False
+
+    # The UI turns it OFF (the GLM prompted-schema mode).
+    view = client.put(
+        "/api/v1/settings", json={"independent": {"structured_outputs": False}}
+    ).json()["providers"]["independent"]
+    assert view["structuredOutputs"] is False
+    assert view["structuredOutputsHere"] is True
+
+    # An explicit environment OFF: refresh the cached Settings first (the
+    # hermetic reset hook — mid-test env changes need it).
+    monkeypatch.setenv("OPENAI_STRUCTURED_OUTPUTS", "false")
+    reset_settings_cache()
+
+    # Explicit null clears to the environment layer again.
+    view = client.put(
+        "/api/v1/settings", json={"independent": {"structured_outputs": None}}
+    ).json()["providers"]["independent"]
+    assert view["structuredOutputs"] is False
+    assert view["structuredOutputsHere"] is False

@@ -686,6 +686,8 @@ export const es = {
     loadError: 'No se pudo cargar la configuración.',
     saveError: 'No se pudo guardar. Revisa el endpoint e intenta de nuevo.',
     copyJudge: 'Copiar configuración del Judge',
+    structuredOutputs: 'Salidas estructuradas nativas (JSON Schema)',
+    structuredOutputsHint: 'Desmárcalo para modelos sin soporte estricto de schema (p. ej. GLM) — el schema viaja en el prompt en su lugar.',
     copyJudgeDone: 'Configuración del Judge copiada',
     copyJudgeError: 'El Judge aún no tiene configuración que copiar.',
     helpTitle: 'Cómo llenar este formulario',
@@ -695,7 +697,7 @@ export const es = {
         'Funciona sin configurar — el endpoint predeterminado ya viene puesto. El modelo solo importa para endpoints de Simple Jev (ejemplo: featherless-ai/Qwen3.6-35B-A3B-classifier — vacío usa ese default). La API key solo si tu endpoint exige autenticación.',
       jev: 'El baseline de typesafe.ai. La API key es obligatoria; el modelo es opcional y por defecto es jev-latest.',
       judge: 'Cualquier endpoint OpenAI-compatible. Endpoint, modelo y API key son los tres obligatorios — ejemplo: https://api.openai.com/v1 con gpt-5-nano.',
-      independent: 'Tiene la misma forma del Judge — oprime "Copiar configuración del Judge" para no escribirla dos veces.'
+      independent: 'Tiene la misma forma del Judge — oprime "Copiar configuración del Judge" para no escribirla dos veces. Para endpoints tipo GLM desmarca "Salidas estructuradas nativas" para que las preguntas viajen en el prompt.'
     },
     providers: {
       emulator: {

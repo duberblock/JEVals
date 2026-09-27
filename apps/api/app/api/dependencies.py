@@ -104,7 +104,11 @@ def get_independent_openai_provider() -> IndependentOpenaiProvider | None:
         base_url=config.endpoint or settings.openai_base_url,
         api_key=config.api_key,
         model=config.model,
-        structured_outputs=settings.openai_structured_outputs,
+        structured_outputs=(
+            config.structured_outputs
+            if config.structured_outputs is not None
+            else settings.openai_structured_outputs
+        ),
     )
 
 
