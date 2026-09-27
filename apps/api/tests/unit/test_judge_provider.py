@@ -14,6 +14,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from app.domain.executions.judge import JudgeProviderError
 from app.providers.judge import JudgeClient, build_judge_input, judge_system_prompt
 from app.schemas.judge_evaluation import JudgeEvaluation
 from app.schemas.system_one_result import SystemOneResult
@@ -205,8 +206,11 @@ def test_evaluate_posts_strict_json_schema_request_with_v2_system_prompt():
     # §45 Full LLM Exchange completeness: the system instruction and the
     # request configuration travel with the evidence.
     assert outcome.system_instruction == judge_system_prompt()
+    # The compatibility-ladder run that served the request is part of the
+    # persisted evidence ("strict" = the historical body).
     assert outcome.configuration == {
         "model": "gpt-4o-mini",
+        "compatibility": "strict",
         "temperature": 0,
         "max_tokens": 8192,
         "timeout_seconds": 120.0,
@@ -471,3 +475,76 @@ def test_aclose_closes_the_underlying_client():
 
     with pytest.raises(RuntimeError):
         asyncio.run(client._client.get("/anything"))
+
+
+# --- Compatibility ladder -----------------------------------------------------
+
+
+def test_a_400_on_strict_escalates_to_guided_reasoning_model_parameters():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        if len(captured) == 1:
+            # The OpenAI reasoning-model rejection (max_tokens/temperature/
+            # strict schema) — the ladder's second step is the remedy.
+            return httpx.Response(400, json={"error": {"message": "Unsupported parameter: 'max_tokens'"}})
+        return wire_response(JUDGE_EVALUATION)
+
+    outcome = asyncio.run(judge_client(httpx.MockTransport(handler)).evaluate(
+        REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON
+    ))
+
+    assert len(captured) == 2
+    second = json.loads(captured[1].read())
+    assert "max_completion_tokens" in second
+    assert "max_tokens" not in second
+    assert "temperature" not in second
+    assert second["response_format"]["json_schema"]["strict"] is False
+    assert outcome.configuration["compatibility"] == "guided"
+
+
+def test_repeated_400s_escalate_to_prompted_and_then_fail_honestly():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        if len(captured) < 3:
+            return httpx.Response(400, json={"error": {"message": "no"}})
+        return wire_response(JUDGE_EVALUATION)
+
+    outcome = asyncio.run(judge_client(httpx.MockTransport(handler)).evaluate(
+        REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON
+    ))
+    assert len(captured) == 3
+    third = json.loads(captured[2].read())
+    assert "response_format" not in third
+    assert outcome.configuration["compatibility"] == "prompted"
+
+    # Three refusals end the attempt — the ladder never loops.
+    captured.clear()
+
+    def always_400(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(400, json={"error": {"message": "no"}})
+
+    with pytest.raises(JudgeProviderError) as excinfo:
+        asyncio.run(judge_client(httpx.MockTransport(always_400)).evaluate(
+            REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON
+        ))
+    assert len(captured) == 3
+    assert "HTTP 400" in str(excinfo.value)
+
+
+def test_non_400_failures_never_escalate():
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(401, json={"error": {"message": "bad key"}})
+
+    with pytest.raises(JudgeProviderError):
+        asyncio.run(judge_client(httpx.MockTransport(handler)).evaluate(
+            REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON
+        ))
+    assert len(captured) == 1

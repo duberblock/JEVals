@@ -38,6 +38,24 @@ CHAT_COMPLETIONS_ENDPOINT = "/chat/completions"
 # for the model's reasoning — truncating otherwise-valid judge output.
 JUDGE_MAX_TOKENS = 8192
 
+# OpenAI reasoning-era models (gpt-5 family and friends) reject two of the
+# judge's historical parameters — `max_tokens` (they demand
+# `max_completion_tokens`) and any non-default `temperature` — and their
+# STRICT structured-output mode imposes schema rules pydantic's generated
+# schema does not guarantee. The judge therefore climbs a three-step
+# compatibility ladder, one HTTP 400 at a time (never looping: non-400
+# verdicts surface immediately, and three refusals end the attempt):
+#   1. strict    — the historical body (temperature 0, max_tokens, strict
+#                  schema) that lenient OpenAI-compatible deployments take;
+#   2. guided    — reasoning-model parameters (max_completion_tokens, no
+#                  temperature) with the SAME schema non-strict (guidance,
+#                  not enforcement);
+#   3. prompted  — schema lives in the system prompt alone (it already
+#                  spells the full contract with a worked example — the v2
+#                  design), any chat model qualifies.
+# The mode that served the request is recorded in the outcome's persisted
+# configuration — the evidence shows what actually ran.
+
 # v2 (R30): the output contract is spelled out IN the prompt with a worked
 # example. v1 delegated the field list to the wire json_schema, but LLM does
 # not reliably deliver strict schemas to the live model (P23), so the model produced
@@ -131,6 +149,73 @@ class JudgeClient:
             headers={"Authorization": f"Bearer {api_key}"},
         )
 
+    def _request_ladder(
+        self, judge_input: JsonObject, output_schema: dict
+    ) -> list[tuple[JsonObject, JsonObject]]:
+        """The three (body, configuration) attempts, most-compatible-first."""
+        messages = [
+            {"role": "system", "content": judge_system_prompt()},
+            # J3: canonical (sorted-keys) serialization — the same
+            # discipline as request_hash — so semantically equal inputs
+            # are byte-identical on the wire and in persisted evidence,
+            # independent of dict insertion order.
+            {"role": "user", "content": canonical_request_json(judge_input)},
+        ]
+        base: JsonObject = {"model": self.model, "messages": messages}
+        return [
+            (
+                {
+                    **base,
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "judge_evaluation",
+                            "schema": output_schema,
+                            "strict": True,
+                        },
+                    },
+                    "temperature": 0,
+                    "max_tokens": JUDGE_MAX_TOKENS,
+                },
+                {
+                    "model": self.model,
+                    "compatibility": "strict",
+                    "temperature": 0,
+                    "max_tokens": JUDGE_MAX_TOKENS,
+                    "timeout_seconds": self._timeout_seconds,
+                },
+            ),
+            (
+                {
+                    **base,
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "judge_evaluation",
+                            "schema": output_schema,
+                            "strict": False,
+                        },
+                    },
+                    "max_completion_tokens": JUDGE_MAX_TOKENS,
+                },
+                {
+                    "model": self.model,
+                    "compatibility": "guided",
+                    "max_completion_tokens": JUDGE_MAX_TOKENS,
+                    "timeout_seconds": self._timeout_seconds,
+                },
+            ),
+            (
+                {**base, "max_completion_tokens": JUDGE_MAX_TOKENS},
+                {
+                    "model": self.model,
+                    "compatibility": "prompted",
+                    "max_completion_tokens": JUDGE_MAX_TOKENS,
+                    "timeout_seconds": self._timeout_seconds,
+                },
+            ),
+        ]
+
     async def evaluate(
         self,
         request: JsonObject,
@@ -140,35 +225,25 @@ class JudgeClient:
     ) -> JudgeOutcome:
         judge_input = build_judge_input(request, emulator_result, jev_result, comparison)
         output_schema = JudgeEvaluation.model_json_schema()
-        body = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": judge_system_prompt()},
-                # J3: canonical (sorted-keys) serialization — the same
-                # discipline as request_hash — so semantically equal inputs
-                # are byte-identical on the wire and in persisted evidence,
-                # independent of dict insertion order.
-                {"role": "user", "content": canonical_request_json(judge_input)},
-            ],
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "judge_evaluation",
-                    "schema": output_schema,
-                    "strict": True,
-                },
-            },
-            "temperature": 0,
-            "max_tokens": JUDGE_MAX_TOKENS,
-        }
-        try:
-            response = await self._client.post(CHAT_COMPLETIONS_ENDPOINT, json=body)
-        except httpx.TimeoutException as error:
-            raise JudgeProviderError(
-                message="The LLM Judge did not respond within the timeout."
-            ) from error
-        except httpx.HTTPError as error:
-            raise JudgeProviderError(message="The LLM Judge could not be reached.") from error
+        attempts = self._request_ladder(judge_input, output_schema)
+        response = None
+        configuration: JsonObject = attempts[-1][1]
+        for index, (body, attempt_configuration) in enumerate(attempts):
+            configuration = attempt_configuration
+            try:
+                response = await self._client.post(CHAT_COMPLETIONS_ENDPOINT, json=body)
+            except httpx.TimeoutException as error:
+                raise JudgeProviderError(
+                    message="The LLM Judge did not respond within the timeout."
+                ) from error
+            except httpx.HTTPError as error:
+                raise JudgeProviderError(message="The LLM Judge could not be reached.") from error
+            # A 400 says THIS BODY is not acceptable — the ladder's next
+            # step is exactly the remedy. Anything else (auth, rate limit,
+            # success) is final.
+            if response.status_code != 400:
+                break
+        assert response is not None
         if not response.is_success:
             raise JudgeProviderError(
                 message=f"The LLM Judge returned HTTP {response.status_code}.",
@@ -195,12 +270,7 @@ class JudgeClient:
             output_schema=output_schema,
             raw_response=content,
             system_instruction=judge_system_prompt(),
-            configuration={
-                "model": self.model,
-                "temperature": 0,
-                "max_tokens": JUDGE_MAX_TOKENS,
-                "timeout_seconds": self._timeout_seconds,
-            },
+            configuration=configuration,
         )
 
     async def aclose(self) -> None:
