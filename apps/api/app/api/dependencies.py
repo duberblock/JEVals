@@ -12,7 +12,7 @@ from app.domain.executions.jev import JevProvider
 from app.domain.executions.judge import JudgeProvider
 from app.domain.executions.repository import ExecutionRepository
 from app.domain.settings.service import EffectiveProvider, effective_providers
-from app.persistence.database import SessionLocal, get_session
+from app.persistence.database import get_session, get_session_local
 from app.persistence.repositories.executions import execution_repository_for_session
 from app.providers.emulator import EmulatorClient
 from app.providers.independent_openai import IndependentOpenaiClient
@@ -32,7 +32,7 @@ def effective_without_request() -> dict:
     """Composition-root helper: the dependency-cached provider builders
     have no request session, so they read the settings store through a
     short-lived one."""
-    session = SessionLocal()
+    session = get_session_local()()
     try:
         return effective_providers(session)
     finally:
