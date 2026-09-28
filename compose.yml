@@ -18,7 +18,7 @@ services:
       dockerfile: infra/docker/api.Dockerfile
     # Migrations run on every boot (alembic upgrade head is idempotent on an
     # up-to-date schema) before the API serves traffic.
-    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    command: sh -c ".venv/bin/alembic upgrade head && exec .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000"
     environment:
       DATABASE_URL: sqlite:////data/jevals.db
       # Fail closed: with AUTH_REQUIRED=true the API rejects every

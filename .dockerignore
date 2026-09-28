@@ -1,0 +1,14 @@
+# Keep the Docker build context clean: local artifacts never enter the
+# images (COPY apps/api ./ was shipping a macOS .venv over the image's own,
+# and the context itself shrinks by gigabytes).
+.git
+.env
+.env.*
+**/.venv
+**/node_modules
+**/.next
+**/test-results
+**/playwright-report
+data
+docs/assets
+.coolify
