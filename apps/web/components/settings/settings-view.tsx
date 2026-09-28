@@ -84,7 +84,7 @@ function LinkifiedText({ text }: { text: string }) {
     if (index > lastIndex) nodes.push(text.slice(lastIndex, index))
     nodes.push(
       <a
-        className="underline underline-offset-2"
+        className="text-primary underline underline-offset-2"
         href={url}
         key={`${url}-${index}`}
         rel="noreferrer"
@@ -454,7 +454,12 @@ function CompatibilityBlock({ dictionary }: { dictionary: Dictionary['settings']
               <tr className="border-b border-border/60" key={provider}>
                 <td className="py-2 pr-3 font-medium">{provider}</td>
                 <td className="py-2 pr-3 font-mono text-xs wrap-anywhere">
-                  <a className="underline underline-offset-2" href={endpoint} rel="noreferrer" target="_blank">
+                  <a
+                    className="text-primary underline underline-offset-2"
+                    href={endpoint}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
                     {endpoint}
                   </a>
                 </td>
