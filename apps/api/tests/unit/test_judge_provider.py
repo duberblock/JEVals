@@ -217,6 +217,42 @@ def test_evaluate_posts_strict_json_schema_request_with_v2_system_prompt():
     }
 
 
+# --- Served model (FB2 semantics) ---------------------------------------------
+
+
+def test_the_outcome_model_is_the_one_the_endpoint_reports_having_served():
+    """OpenAI-compatible responses carry the RESOLVED model name (a dated
+    snapshot, an ollama tag). The section's model is that report — the
+    configured alias stays in the ladder configuration for provenance."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "model": "deepseek-v4-pro:cloud",
+                "choices": [{"message": {"content": json.dumps(JUDGE_EVALUATION)}}],
+            },
+        )
+
+    outcome = asyncio.run(judge_client(httpx.MockTransport(handler)).evaluate(
+        REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON
+    ))
+
+    assert outcome.model == "deepseek-v4-pro:cloud"
+    # Provenance: the configured alias still records what was requested.
+    assert outcome.configuration["model"] == "gpt-4o-mini"
+
+
+def test_a_response_without_a_model_field_falls_back_to_the_configured_name():
+    assert wire_response(JUDGE_EVALUATION).json().get("model") is None
+
+    outcome = asyncio.run(judge_client(httpx.MockTransport(
+        lambda request: wire_response(JUDGE_EVALUATION)
+    )).evaluate(REQUEST, EMULATOR_RESULT, JEV_RESULT, COMPARISON))
+
+    assert outcome.model == "gpt-4o-mini"
+
+
 # --- Error paths -------------------------------------------------------------
 
 

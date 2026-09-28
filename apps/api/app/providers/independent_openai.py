@@ -267,10 +267,17 @@ class IndependentOpenaiClient:
 
     async def _finish(self, response: Any, request: JsonObject) -> IndependentOpenaiPrediction:
         data = response.model_dump(mode="json")
+        debug = data.get("debug") or {}
+        attempts = debug.get("llm_attempts", [])
         try:
             result = SystemOneResult.model_validate(
                 {
-                    "model": data["model"],
+                    # FB2 semantics: prefer the model name the endpoint REPORTS
+                    # having served (each attempt's llm_response carries it) —
+                    # data["model"] is only the adapter's echo of the
+                    # configured name. run_config.model keeps the configured
+                    # one, so provenance survives alongside.
+                    "model": _served_model(attempts) or data["model"],
                     "answers": data["answers"],
                     "usage": {
                         "input_tokens": data["usage"]["input_tokens"],
@@ -285,8 +292,6 @@ class IndependentOpenaiClient:
                 message="The independent LLM prediction returned an unparsable result."
             ) from error
 
-        debug = data.get("debug") or {}
-        attempts = debug.get("llm_attempts", [])
         return IndependentOpenaiPrediction(
             result=result,
             llm_attempts=_redact_secrets(attempts),
@@ -337,6 +342,20 @@ class IndependentOpenaiClient:
         wired_fallback = self._wired_fallback_provider
         if wired_fallback is not None and isinstance(wired_fallback, SupportsAsyncClose):
             await wired_fallback.aclose()
+
+
+def _served_model(attempts: list[JsonObject]) -> str | None:
+    """The model name the endpoint REPORTS having served, from the LAST
+    attempt that carries an LLM response — that attempt produced the final
+    text (after any malformed-structure fallback), so its report is the one
+    that ran. None when no attempt recorded one (older adapters, seams in
+    tests) — the caller then keeps the configured-name echo."""
+    for attempt in reversed(attempts):
+        response = attempt.get("llm_response") if isinstance(attempt, dict) else None
+        model = response.get("model") if isinstance(response, dict) else None
+        if isinstance(model, str) and model:
+            return model
+    return None
 
 
 def _redact_secrets(value: Any) -> Any:

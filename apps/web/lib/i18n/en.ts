@@ -440,6 +440,7 @@ export const en = {
       executionId: 'Execution ID',
       requestHash: 'Request hash',
       mode: 'Mode',
+      models: 'Models',
       created: 'Created',
       actions: 'Actions',
       viewInInvestigation: 'View in Investigation',

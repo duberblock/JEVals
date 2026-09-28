@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { CopyButton } from '../investigation/copy-button'
 import { Button } from '../ui/button'
-import type { ExecutionSnapshot } from '../../lib/execution-snapshot'
+import { summarizeSnapshot, type ExecutionSnapshot } from '../../lib/execution-snapshot'
 import { downloadJson } from '../../lib/investigation/download'
 import type { Dictionary, Locale } from '../../lib/i18n'
 
@@ -22,6 +22,10 @@ export function InfoPanel({
   snapshot: ExecutionSnapshot
 }) {
   const copy = dictionary.info
+  // The run's own model report — every section that ran contributes the
+  // model the ENDPOINT reported serving (same line as Principal's context
+  // bar), so the run is traceable from Operación alone.
+  const models = summarizeSnapshot(snapshot).providers
   // F4/§15.5: raw mode enums render as localized labels; unknown future
   // values fall back to the raw enum so the panel never blanks out.
   const modeLabels = dictionary.mode as Record<string, string>
@@ -44,6 +48,14 @@ export function InfoPanel({
             <dt className="text-muted-foreground">{copy.mode}</dt>
             <dd>{modeLabels[snapshot.mode] ?? snapshot.mode}</dd>
           </div>
+          {models.length > 0 ? (
+            <div className="flex flex-wrap items-baseline gap-2">
+              <dt className="text-muted-foreground">{copy.models}</dt>
+              <dd className="font-mono text-xs wrap-anywhere" data-testid="operation-models">
+                {models.join(' · ')}
+              </dd>
+            </div>
+          ) : null}
           <div className="flex flex-wrap items-baseline gap-2">
             <dt className="text-muted-foreground">{copy.created}</dt>
             <dd>

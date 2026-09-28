@@ -147,6 +147,30 @@ describe('WhyView — §33 judge verdict badge (B6)', () => {
   })
 })
 
+describe('WhyView — served model traceability', () => {
+  it('shows the models the endpoints reported serving in both LLM panels', () => {
+    const snapshot = clone(compareSnapshot())
+    snapshot.ai_evaluation!.model = 'deepseek-v4-pro:cloud'
+    snapshot.independent_openai!.model = 'gpt-5-nano-2025-08-27'
+
+    renderWhy(snapshot, 'urgency')
+
+    expect(screen.getByTestId('ai-model')).toHaveTextContent('deepseek-v4-pro:cloud')
+    expect(screen.getByTestId('independent-model')).toHaveTextContent('gpt-5-nano-2025-08-27')
+  })
+
+  it('renders no model line on sections without one (pre-traceability snapshots)', () => {
+    const snapshot = clone(compareSnapshot())
+    delete snapshot.ai_evaluation!.model
+    delete snapshot.independent_openai!.model
+
+    renderWhy(snapshot, 'urgency')
+
+    expect(screen.queryByTestId('ai-model')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('independent-model')).not.toBeInTheDocument()
+  })
+})
+
 // B4 (ADR-013 ruling 4): desktop-only minimal rail in the §29 compare score
 // row — positions only, no text, aria-hidden; mobile rendering is untouched.
 const emulatorAnswers: Record<string, EmulatorAnswer> = {

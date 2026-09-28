@@ -163,6 +163,38 @@ def test_request_model_never_overrides_the_server_model():
     assert prediction.result.model == "gpt-4o-mini"
 
 
+def test_the_result_model_is_the_one_the_endpoint_reports_having_served():
+    """FB2 semantics for the independent leg: each attempt's llm_response
+    carries the RESOLVED model name the endpoint served (an ollama tag, a
+    dated OpenAI snapshot). The LAST attempt carrying one produced the final
+    text — its report wins over the configured-name echo. run_config keeps
+    the configured name for provenance."""
+    debug = {
+        "llm_attempts": [
+            {"llm_response": None},
+            {"llm_response": {"model": "deepseek-v4-pro:cloud"}},
+        ]
+    }
+    adapter = FakeAdapter(response=adapter_response(debug=debug))
+    client = IndependentOpenaiClient(
+        base_url="https://openai.test", api_key="llm-secret-key", model="gpt-4o-mini", adapter=adapter
+    )
+
+    prediction = asyncio.run(client.execute(REQUEST))
+
+    assert prediction.result.model == "deepseek-v4-pro:cloud"
+    assert prediction.run_config["model"] == "gpt-4o-mini"
+    # The evidence travels redacted but intact — the served name stays
+    # traceable in llm_attempts too.
+    assert prediction.llm_attempts[1]["llm_response"]["model"] == "deepseek-v4-pro:cloud"
+
+
+def test_attempts_without_a_served_model_keep_the_configured_echo():
+    prediction = asyncio.run(client_with_provider(FakeAsyncProvider()).execute(REQUEST))
+
+    assert prediction.result.model == "gpt-4o-mini"
+
+
 def test_the_wrapper_passes_only_state_and_questions_to_the_adapter():
     adapter = FakeAdapter(adapter_response())
     client = IndependentOpenaiClient(

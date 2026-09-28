@@ -786,6 +786,11 @@ function AiBlock({
   return (
     <div className="space-y-2 rounded-lg border border-border p-4" data-testid="why-ai" ref={aiRef}>
       <p className="text-xs font-bold tracking-widest text-muted-foreground">{dictionary.aiTitle}</p>
+      {evaluation.model ? (
+        <p className="font-mono text-xs text-muted-foreground wrap-anywhere" data-testid="ai-model">
+          {evaluation.model}
+        </p>
+      ) : null}
       {divergence ? <JudgeBadge divergence={divergence} preferred={preferred ?? ''} /> : null}
       {excerpt ? (
         <p className="text-sm text-muted-foreground line-clamp-2" data-testid="ai-question-excerpt">
@@ -895,6 +900,11 @@ function IndependentBlock({
   return (
     <div className="space-y-1 rounded-lg border border-border p-4" data-testid="why-independent">
       <p className="text-xs font-bold tracking-widest text-muted-foreground">{dictionary.independentTitle}</p>
+      {independent.model ? (
+        <p className="font-mono text-xs text-muted-foreground wrap-anywhere" data-testid="independent-model">
+          {independent.model}
+        </p>
+      ) : null}
       {value ? <p className="text-sm font-bold">{value}</p> : null}
       {phrase ? (
         <p

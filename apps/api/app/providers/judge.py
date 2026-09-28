@@ -258,13 +258,22 @@ class JudgeClient:
                 status=response.status_code,
             )
         try:
-            content = response.json()["choices"][0]["message"]["content"]
+            payload = response.json()
+            content = payload["choices"][0]["message"]["content"]
             if not isinstance(content, str):
                 raise TypeError("content is not a string")
         except (ValueError, KeyError, IndexError, TypeError) as error:
             raise JudgeProviderError(
                 message="The LLM Judge returned an unparsable response."
             ) from error
+        # FB2 semantics for the Judge too: the section's model is the name the
+        # endpoint REPORTS having served (responses carry the resolved name —
+        # an ollama "deepseek-v4-pro:cloud", an OpenAI dated snapshot), not
+        # the configured alias. The ladder's configuration keeps the
+        # configured model, so provenance survives alongside.
+        served_model = payload.get("model")
+        if not isinstance(served_model, str) or not served_model:
+            served_model = None
         try:
             evaluation = _parse_evaluation(content)
         except (ValidationError, ValueError) as error:
@@ -272,7 +281,7 @@ class JudgeClient:
                 message="The LLM Judge returned an invalid evaluation."
             ) from error
         return JudgeOutcome(
-            model=self.model,
+            model=served_model or self.model,
             evaluation=evaluation,
             judge_input=judge_input,
             output_schema=output_schema,

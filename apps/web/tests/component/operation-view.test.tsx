@@ -79,6 +79,16 @@ describe('OperationView — loading and selection (§54.2)', () => {
     }
   })
 
+  it('shows the models the run reports in the info panel (traceable from Operación alone)', async () => {
+    const fetchMock = routeFetch(listWith(railItem({})), { [OPERATION_RUN_ID]: operationalSnapshot() })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<OperationView />)
+
+    const models = await screen.findByTestId('operation-models')
+    expect(models.textContent).toBe('jev-emulator · jev-latest · judge-llm · gpt-4o-mini')
+  })
+
   // R3 (dual-review): 16px at ALL widths — an sm:text-sm override would drop
   // below 16px on iPhone SE/8 landscape (667px > sm=640) and re-trigger the
   // iOS focus zoom (§16 no-zoom gate).

@@ -427,6 +427,7 @@ export const es = {
       executionId: 'ID de ejecución',
       requestHash: 'Hash de solicitud',
       mode: 'Modo',
+      models: 'Modelos',
       created: 'Creada',
       actions: 'Acciones',
       viewInInvestigation: 'Ver en Investigación',
