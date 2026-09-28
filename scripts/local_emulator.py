@@ -176,7 +176,8 @@ def main(argv: list[str] | None = None) -> int:
     server = ThreadingHTTPServer(("127.0.0.1", args.port), _Handler)
     print(
         f"local emulator on http://127.0.0.1:{args.port} "
-        f"(EMULATOR_URL=http://localhost:{args.port}) -> {args.base}{CLASSIFIER_PATH} "
+        f"(set EMULATOR_URL=http://localhost:{args.port}, or paste it on the "
+        f"Emulator card in Settings) -> {args.base}{CLASSIFIER_PATH} "
         f"model={args.model} auth={'bearer' if _Handler.api_key else 'none'}",
         flush=True,
     )

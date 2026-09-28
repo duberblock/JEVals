@@ -207,28 +207,41 @@ async def _observing_leg(
 
 
 class LlmNotConfiguredError(Exception):
-    """OPENAI_API_KEY or OPENAI_MODEL is unset, so a LLM branch cannot run."""
+    """No LLM provider is configured (Settings or environment), so an LLM
+    branch cannot run."""
 
     def __init__(self) -> None:
-        detail = "The LLM integration is not configured. Set OPENAI_API_KEY and OPENAI_MODEL to run LLM executions."
+        detail = (
+            "The LLM integration is not configured. Configure the Judge and "
+            "Independent providers in Settings (or the OPENAI_* environment "
+            "variables) to run LLM executions."
+        )
         super().__init__(detail)
         self.detail = detail
 
 
 class EmulatorNotConfiguredError(Exception):
-    """EMULATOR_URL is unset, so executions cannot run."""
+    """No emulator endpoint is configured (Settings or environment), so
+    executions cannot run."""
 
     def __init__(self) -> None:
-        detail = "The emulator is not configured. Set EMULATOR_URL to run emulator executions."
+        detail = (
+            "The emulator is not configured. Set an endpoint on the Emulator "
+            "card in Settings (or EMULATOR_URL) to run emulator executions."
+        )
         super().__init__(detail)
         self.detail = detail
 
 
 class JevNotConfiguredError(Exception):
-    """TYPESAFE_API_KEY is unset, so compare executions cannot run."""
+    """No JEV baseline is configured (Settings or environment), so compare
+    executions cannot run."""
 
     def __init__(self) -> None:
-        detail = "The JEV is not configured. Set TYPESAFE_API_KEY to run compare executions."
+        detail = (
+            "The JEV is not configured. Set an API key on the JEV Reference "
+            "card in Settings (or TYPESAFE_API_KEY) to run compare executions."
+        )
         super().__init__(detail)
         self.detail = detail
 

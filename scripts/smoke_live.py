@@ -134,14 +134,15 @@ CANONICAL_SYSTEM_ONE = {
 ADVANCED_INDEPENDENT = {"independent_openai_prediction": True}
 
 # Loud skip notes (default --require only): name the configuration the §63
-# capabilities matrix lacks, so the operator knows what to inject.
+# capabilities matrix lacks, so the operator knows what to configure. The
+# Settings screen is the primary path; the env vars remain the pre-seed.
 SKIP_NOTES = {
     "emulator": "SKIPPED emulator — not configured at this deployment "
-                "(EMULATOR_URL absent?)",
+                "(no Emulator endpoint in Settings or EMULATOR_URL)",
     "jev": "SKIPPED jev — not configured at this deployment "
-           "(TYPESAFE_API_KEY absent?)",
+           "(no JEV key in Settings or TYPESAFE_API_KEY)",
     "openai": "SKIPPED LLM — not configured at this deployment "
-           "(OPENAI_API_KEY absent?); full acceptance = --require all",
+           "(no LLM provider in Settings or OPENAI_*); full acceptance = --require all",
 }
 
 # Fail-fast line after a FAILED origin-auth check: nothing else runs, so a

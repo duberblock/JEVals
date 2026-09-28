@@ -481,7 +481,7 @@ class CapabilitiesDrivenSkipTestCase(SmokeLiveTestCase):
         self.assertEqual(out.count("SKIP openai-evaluate —"), 1)
         self.assertIn(
             "SKIPPED LLM — not configured at this deployment "
-            "(OPENAI_API_KEY absent?); full acceptance = --require all",
+            "(no LLM provider in Settings or OPENAI_*); full acceptance = --require all",
             out,
         )
         for name in CHECK_NAMES:
@@ -513,7 +513,7 @@ class CapabilitiesDrivenSkipTestCase(SmokeLiveTestCase):
         self.assertEqual(code, 0, out)
         self.assertEqual(out.count("SKIP emulator-run —"), 1)
         self.assertIn("SKIPPED emulator — not configured", out)
-        self.assertIn("EMULATOR_URL absent", out)
+        self.assertIn("no Emulator endpoint in Settings or EMULATOR_URL", out)
         self.assertIn("PASS jev-compare —", out)
         self.assertIn("PASS openai-evaluate —", out)
 

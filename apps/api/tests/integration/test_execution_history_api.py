@@ -559,7 +559,9 @@ def test_compare_and_evaluate_without_openai_returns_503_precondition(client):
     body = response.json()
     assert body["title"] == "LLM Not Configured"
     assert body["detail"] == (
-        "The LLM integration is not configured. Set OPENAI_API_KEY and OPENAI_MODEL to run LLM executions."
+        "The LLM integration is not configured. Configure the Judge and "
+        "Independent providers in Settings (or the OPENAI_* environment "
+        "variables) to run LLM executions."
     )
 
 
