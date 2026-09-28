@@ -62,8 +62,8 @@ falls back to it.
 
 Both provider legs can run on your machine:
 
-- **Emulator — works out of the box**: the default endpoint is the hosted
-  SystemOne service (`https://jevs-jimmy.blockito.cloud/v1/systemone`).
+- **Emulator — works out of the box**: the default endpoint is a hosted
+  SystemOne service (the exact URL is shown in the app's Settings).
   Two one-step alternatives: the **Use the public demo** button in the
   settings card fills the free [Simple Jev](https://simple-jev.featherless.ai/)
   demo (`https://simple-jev-demo-api.featherless.ai/v1/classifier` — no
