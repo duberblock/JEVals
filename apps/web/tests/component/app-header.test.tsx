@@ -46,7 +46,7 @@ describe('AppHeader (locale-reactive chrome)', () => {
     // source — is allowed; invented/pseudo-OS version chrome stays banned.
     expect(screen.getByText('JEVals')).toBeInTheDocument()
     expect(screen.getByText('// PLAYGROUND')).toBeInTheDocument()
-    expect(screen.getByText('v1.2.0')).toBeInTheDocument()
+    expect(screen.getByText('v1.3.0')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Investigation' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Operation' })).toBeInTheDocument()
 
