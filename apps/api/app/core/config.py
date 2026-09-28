@@ -59,6 +59,13 @@ class Settings(BaseSettings):
     # string so compose-style empty passthroughs never crash Settings.
     auth_required: str | None = None
     api_port: int = 8000
+    # Execution admission control (app.core.limits): each run triggers up to
+    # four paid provider legs, so the route caps request size and run rate.
+    # A value <= 0 disables that dimension. The 1 MiB default leaves ~2x
+    # headroom over a ~120k-token scenario (~600-700 KB as JSON).
+    max_execution_request_bytes: int = 1_048_576
+    max_concurrent_executions: int = 2
+    max_executions_per_minute: int = 10
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

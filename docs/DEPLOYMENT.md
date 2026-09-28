@@ -86,6 +86,8 @@ only these essentials):
 | `AUTH_REQUIRED` | API fail-closed auth posture | unset = dev pass-through |
 | `SETTINGS_ENCRYPTION_KEY` | master key for credentials saved via the Settings UI | unset → `settings.key` file beside the DB (survives redeploys via the `./data` volume) |
 | `API_PORT` | local API port (`dev`) | `8000` |
+| `MAX_EXECUTION_REQUEST_BYTES` / `MAX_CONCURRENT_EXECUTIONS` / `MAX_EXECUTIONS_PER_MINUTE` | execution admission control (body cap / in-flight / rate; `<= 0` disables) | `1048576` / `2` / `10` |
+
 
 ### Env pre-seed (optional, advanced)
 

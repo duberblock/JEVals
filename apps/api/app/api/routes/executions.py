@@ -32,6 +32,8 @@ from app.application.execute_system_one import (
 )
 from app.application.get_execution import get_execution
 from app.application.list_executions import DEFAULT_LIMIT, MAX_LIMIT, list_executions as list_execution_page
+from app.core.config import get_settings
+from app.core.limits import release_execution, try_acquire_execution
 from app.core.problems import problem_body, problem_response
 from app.domain.executions.emulator import EmulatorProvider
 from app.domain.executions.independent_openai import IndependentOpenaiProvider
@@ -94,6 +96,33 @@ def _sse_frame(event: str, data: Any) -> str:
 
 def _section_frame(event: SectionEvent) -> str:
     return _sse_frame("section", {"section": event.section, "status": event.status, "payload": event.payload})
+
+
+def _payload_too_large(request: Request, max_bytes: int) -> JSONResponse:
+    return problem_response(
+        request,
+        status=413,
+        title="Payload Too Large",
+        detail=(
+            "The request body exceeds the execution size limit "
+            f"({max_bytes} bytes). Condense the state before running."
+        ),
+        problem_type="payload-too-large",
+    )
+
+
+def _too_many_requests(request: Request, retry_after_seconds: int) -> JSONResponse:
+    return problem_response(
+        request,
+        status=429,
+        title="Too Many Requests",
+        detail=(
+            "The execution rate or concurrency limit is reached. "
+            "Retry after the indicated delay."
+        ),
+        problem_type="rate-limit-exceeded",
+        headers={"Retry-After": str(retry_after_seconds)},
+    )
 
 
 def _pre_execution_problem(request: Request, error: Exception) -> JSONResponse:
@@ -334,9 +363,29 @@ async def create_execution(
     resolve, then one terminal final/error frame). Pre-stream failures
     (invalid JSON 400, invalid envelope 422, configuration preconditions 503)
     still answer their RFC 7807 JSON problems — no stream is opened.
+
+    Admission control: oversized bodies answer 413 before they are parsed,
+    and only VALID envelopes consume a rate/concurrency slot (app.core
+    .limits) — garbage requests can never drain the run budget. The SSE lane
+    holds its slot for as long as the stream is open (a client disconnect
+    releases it; the shielded run keeps going server-side, §50).
     """
+    limits = get_settings()
+    declared_size = request.headers.get("content-length")
+    if (
+        declared_size is not None
+        and declared_size.isdigit()
+        and int(declared_size) > limits.max_execution_request_bytes
+    ):
+        # Fast path: reject on the declared size without reading the body
+        # (chunked bodies without Content-Length fall through to the exact
+        # length check below).
+        return _payload_too_large(request, limits.max_execution_request_bytes)
+    body_bytes = await request.body()
+    if len(body_bytes) > limits.max_execution_request_bytes:
+        return _payload_too_large(request, limits.max_execution_request_bytes)
     try:
-        raw = await request.json()
+        raw = json.loads(body_bytes)
     except ValueError:
         # json.JSONDecodeError (and UnicodeDecodeError) are ValueErrors.
         return problem_response(
@@ -378,17 +427,32 @@ async def create_execution(
             JevNotConfiguredError,
         ) as error:
             return _pre_execution_problem(request, error)
+        retry_after = try_acquire_execution(
+            limits.max_concurrent_executions, limits.max_executions_per_minute
+        )
+        if retry_after is not None:
+            return _too_many_requests(request, retry_after)
+
+        async def limited_stream() -> AsyncIterator[str]:
+            # The slot is held while the STREAM is open: a client disconnect
+            # releases it (the shielded run keeps going server-side, §50).
+            try:
+                async for frame in stream_execution_events(
+                    repo=repo,
+                    emulator=emulator,
+                    jev=jev,
+                    judge=judge,
+                    independent=independent,
+                    envelope=envelope,
+                    request=request,
+                    prepared=prepared,
+                ):
+                    yield frame
+            finally:
+                release_execution()
+
         return StreamingResponse(
-            stream_execution_events(
-                repo=repo,
-                emulator=emulator,
-                jev=jev,
-                judge=judge,
-                independent=independent,
-                envelope=envelope,
-                request=request,
-                prepared=prepared,
-            ),
+            limited_stream(),
             status_code=201,
             media_type=SSE_MEDIA_TYPE,
             # Stream-safe directives replace the §13 no-store default on this
@@ -396,6 +460,11 @@ async def create_execution(
             # incremental frames.
             headers={"cache-control": "no-cache, no-transform"},
         )
+    retry_after = try_acquire_execution(
+        limits.max_concurrent_executions, limits.max_executions_per_minute
+    )
+    if retry_after is not None:
+        return _too_many_requests(request, retry_after)
     try:
         execution = await execute_system_one(
             repo=repo,
@@ -437,6 +506,8 @@ async def create_execution(
             problem_type="internal-server-error",
             extra={"execution_id": error.execution_id},
         )
+    finally:
+        release_execution()
     return execution.payload
 
 
