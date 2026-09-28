@@ -1,46 +1,46 @@
 # Duber López (@duberblock)
 **AI Solutions Architect | Enterprise Technology Leader**
 
-> *"La IA debe integrarse nativamente en la arquitectura de software. Y la arquitectura sin propósito de negocio es solo código."*
+> *"AI must integrate natively into software architecture. And architecture without business purpose is just code."*
 
 ---
 
 ### 👤 Bio
 
-**Duber López** (Duberney López Piza) es un Arquitecto de Soluciones e Inteligencia Artificial con más de 25 años de experiencia en desarrollo de software y sistemas empresariales.
+**Duber López** (Duberney López Piza) is an AI and Solutions Architect with more than 25 years of experience in software development and enterprise systems.
 
-Su trabajo se enfoca en diseñar arquitecturas escalables y pragmáticas: desde sistemas *core* y migraciones de datos masivas, hasta infraestructura en la nube (AWS, Azure, GCP), sistemas descentralizados e integración de IA autónoma en producción.
-
----
-
-### 🎯 Enfoque en Inteligencia Artificial
-
-* **IA Tradicional (ML & MLOps):** Modelos predictivos, clasificación masiva de datos y pipelines auditables en la nube.
-* **IA Generativa & Gobernanza:** Integración segura de LLMs (OpenAI, Anthropic, Gemini, Llama), control de costos de tokens, guardrails de seguridad y prevención de fugas de datos.
-* **IA Agéntica:** Sistemas multi-agente para automatización de procesos conectados a APIs, bases de datos vectoriales y ERPs/CRMs.
+His work focuses on designing scalable, pragmatic architectures: from *core* systems and massive data migrations to cloud infrastructure (AWS, Azure, GCP), decentralized systems, and autonomous AI integration in production.
 
 ---
 
-### 📊 Resultados Clave
+### 🎯 AI Focus
 
-* **+25 años** de trayectoria en arquitectura e ingeniería de software.
-* **4+ Petabytes** de datos migrados de sistemas *legacy* a MongoDB, reduciendo procesamientos de **6 semanas a 10 minutos**.
-* **-80% de trabajo manual** en clasificación operativa mediante visión por computador e IA en producción (Bondii).
-* **De 45 días a 5.5 horas** en tiempos de despliegue mediante optimización de pipelines DevOps e integración bancaria.
-
----
-
-### 🛠️ Stack Principal
-
-* **IA & Data:** Python, LangGraph, CrewAI, AutoGen, RAG, Vector DBs, MLOps, SQL, MongoDB, Snowflake.
-* **Cloud & Backend:** AWS, Azure, GCP, Docker, .NET / C#, Microservicios, REST APIs.
-* **Ecosistemas & Otros:** Microsoft Copilot Studio, Power Platform, Dynamics 365, Solidity / Blockchain.
+* **Traditional AI (ML & MLOps):** Predictive models, large-scale data classification, and auditable pipelines in the cloud.
+* **Generative AI & Governance:** Secure LLM integration (OpenAI, Anthropic, Gemini, Llama), token cost control, security guardrails, and data-leak prevention.
+* **Agentic AI:** Multi-agent systems for process automation connected to APIs, vector databases, and ERPs/CRMs.
 
 ---
 
-### 🌐 Contacto & Redes
+### 📊 Key Results
 
-* 🌐 **Sitio Web:** [duberney.com](http://www.duberney.com)
+* **25+ years** of track record in software architecture and engineering.
+* **4+ Petabytes** of data migrated from *legacy* systems to MongoDB, cutting processing from **6 weeks to 10 minutes**.
+* **-80% manual work** in operational classification through computer vision and AI in production (Bondii).
+* **From 45 days to 5.5 hours** in deployment times via DevOps pipeline optimization and banking integration.
+
+---
+
+### 🛠️ Core Stack
+
+* **AI & Data:** Python, LangGraph, CrewAI, AutoGen, RAG, Vector DBs, MLOps, SQL, MongoDB, Snowflake.
+* **Cloud & Backend:** AWS, Azure, GCP, Docker, .NET / C#, Microservices, REST APIs.
+* **Ecosystems & Others:** Microsoft Copilot Studio, Power Platform, Dynamics 365, Solidity / Blockchain.
+
+---
+
+### 🌐 Contact & Networks
+
+* 🌐 **Website:** [duberney.com](http://www.duberney.com)
 * ✍️ **Blog:** [duberblock.duberney.com](http://duberblock.duberney.com)
 * 🔗 **Linktree:** [linktr.ee/duberblock](https://linktr.ee/duberblock)
 * 💼 **LinkedIn:** [linkedin.com/in/duberney](https://www.linkedin.com/in/duberney)
