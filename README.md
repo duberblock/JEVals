@@ -21,9 +21,7 @@ Get an immediate overview of each evaluation run, including JEV fidelity,
 question alignment, semantic divergence, independent verification, and the
 models involved.
 
-<p align="center">
-  <img src="docs/assets/01-JEVals-by-duberblock.png" alt="JEVals execution summary: fidelity, alignment, divergence and the models of a run">
-</p>
+![JEVals execution summary: fidelity, alignment, divergence and the models of a run](docs/assets/01-JEVals-by-duberblock.png)
 
 ### B. CHOICE Investigation
 
@@ -31,18 +29,14 @@ Inspect classification decisions question by question. Compare the Emulator
 and JEV outputs, see whether both systems selected the same decision, and
 review the Judge and Independent results.
 
-<p align="center">
-  <img src="docs/assets/02-JEVals-by-duberblock.png" alt="JEVals choice investigation: Emulator vs JEV decisions side by side">
-</p>
+![JEVals choice investigation: Emulator vs JEV decisions side by side](docs/assets/02-JEVals-by-duberblock.png)
 
 ### C. SCORE Investigation
 
 Analyze score-based judgments and rubric alignment. Compare values, deltas,
 rubric levels, Judge interpretation, and the Independent prediction.
 
-<p align="center">
-  <img src="docs/assets/03-JEVals-by-duberblock.png" alt="JEVals score investigation: values, delta and rubric levels with the Judge verdict">
-</p>
+![JEVals score investigation: values, delta and rubric levels with the Judge verdict](docs/assets/03-JEVals-by-duberblock.png)
 
 ### D. NOUL Investigation
 
@@ -50,9 +44,7 @@ Analyze probabilistic judgments on the `0–1` scale. Compare Emulator and JEV
 probabilities, inspect the delta and midpoint behavior, and review the Judge
 and Independent signals when the predictions differ.
 
-<p align="center">
-  <img src="docs/assets/04-JEVals-by-duberblock.png" alt="JEVals noul investigation: probabilities on the 0-1 rail with delta and midpoint">
-</p>
+![JEVals noul investigation: probabilities on the 0-1 rail with delta and midpoint](docs/assets/04-JEVals-by-duberblock.png)
 
 ### E. Operation and Timing
 
@@ -60,9 +52,7 @@ Trace how an evaluation was executed. See provider timing, parallel
 execution, comparison and Judge latency, persistence status, and total
 execution time.
 
-<p align="center">
-  <img src="docs/assets/05-JEVals-by-duberblock.png" alt="JEVals operation view: execution flow, provider timings and persistence status">
-</p>
+![JEVals operation view: execution flow, provider timings and persistence status](docs/assets/05-JEVals-by-duberblock.png)
 
 ## Quickstart (local development)
 
