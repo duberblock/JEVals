@@ -31,6 +31,10 @@ What the stack does:
   serves — idempotent on every boot.
 - Persists SQLite in the `./data` bind mount. **Back that directory up**;
   do not store the database in an image layer.
+- Containers run as non-root (API uid 1000 `jevals`, web `node`). On Linux
+  hosts, the `./data` bind mount must be writable by uid 1000
+  (`chown -R 1000:1000 data`); macOS and Windows file sharing maps
+  permissions transparently.
 - Enforces Basic Auth at the API (`AUTH_REQUIRED=true`, fail closed: a
   missing configuration can never serve authenticated paths unauthenticated;
   `/health` and `/ready` stay open).
