@@ -31,6 +31,7 @@ import type {
 import { progressiveSummary, shortExecutionId, summarizeSnapshot } from '../../lib/execution-snapshot'
 import { fill } from '../../lib/i18n/format'
 import { useDictionary } from '../../lib/i18n/use-locale'
+import { isSseResponse, parseSseFrame, splitSseFrames } from '../../lib/sse'
 import { SAMPLE_SYSTEM_ONE_REQUEST } from '../../lib/sample-request'
 import { clearSessionCase, readSessionCase, setSessionCase } from '../../lib/session-case'
 import type { DetectedQuestion, ValidationState } from '../../lib/validation-state'
@@ -49,10 +50,8 @@ const IN_FLIGHT_SOURCES: SourceStatuses = {
   independent: null,
 }
 
-// P28 (FB1): SSE parsing constants — frames are separated by a blank line,
-// each frame carries one `event:` and one `data:` line, and lines starting
-// with ':' are comments (keep-alives) to tolerate and ignore.
-const SSE_FRAME_SEPARATOR = '\n\n'
+// P28 (FB1): SSE parsing lives in lib/sse.ts (pure, unit-tested) — frame
+// splitting, frame parsing and the lane sniff are shared wire contract.
 
 type SseSectionEvent = { section: string; status: string; payload?: unknown }
 
@@ -601,12 +600,10 @@ export function PrincipalView() {
           ...(independentLlm ? { advanced: { independent_openai_prediction: true } } : {}),
         }),
       })
-      // Content-type sniff (defensive: some unit mocks carry no headers at
-      // all — a missing header must never take the SSE lane): only an OK
-      // text/event-stream response streams; everything else keeps the exact
-      // JSON handling below.
-      const contentType = response.headers ? response.headers.get('content-type') : null
-      if (response.ok && contentType !== null && contentType.includes('text/event-stream')) {
+      // Content-type sniff (lib/sse.ts — defensive: some unit mocks carry
+      // no headers at all): only an OK text/event-stream response streams;
+      // everything else keeps the exact JSON handling below.
+      if (isSseResponse(response)) {
         // P39: the LLM legs this envelope expects (the Judge in evaluate
         // mode, the Independent when advanced composes) drive the progress
         // bar's pending flags.
@@ -721,14 +718,9 @@ export function PrincipalView() {
     }
 
     const handleFrame = (frame: string) => {
-      let eventName: string | null = null
-      let data: string | null = null
-      for (const line of frame.split('\n')) {
-        if (line.startsWith(':')) continue
-        if (line.startsWith('event:')) eventName = line.slice('event:'.length).trim()
-        else if (line.startsWith('data:')) data = line.slice('data:'.length).trimStart()
-      }
-      if (eventName === null || data === null) return
+      const parsed = parseSseFrame(frame)
+      if (parsed === null) return
+      const { event: eventName, data } = parsed
       if (eventName === 'section') {
         const section = JSON.parse(data) as SseSectionEvent
         if (CHIP_KEYS.includes(section.section as ChipKey)) {
@@ -798,14 +790,11 @@ export function PrincipalView() {
       for (;;) {
         const { value, done } = await reader.read()
         if (value) buffer += decoder.decode(value, { stream: true })
-        // Complete frames only: a partial frame stays buffered until its
-        // blank-line terminator arrives (or the stream ends, below).
-        let separator = buffer.indexOf(SSE_FRAME_SEPARATOR)
-        while (separator !== -1) {
-          handleFrame(buffer.slice(0, separator))
-          buffer = buffer.slice(separator + SSE_FRAME_SEPARATOR.length)
-          separator = buffer.indexOf(SSE_FRAME_SEPARATOR)
-        }
+        // Complete frames only (lib/sse.ts): a partial frame stays buffered
+        // until its blank-line terminator arrives (or the stream ends, below).
+        const { frames, remainder } = splitSseFrames(buffer)
+        for (const frame of frames) handleFrame(frame)
+        buffer = remainder
         if (done) {
           // Flush the decoder's tail; a residual WITHOUT a terminator means
           // the wire died mid-frame — it is still handed to handleFrame so a

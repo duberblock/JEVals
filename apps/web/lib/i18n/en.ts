@@ -267,6 +267,12 @@ export const en = {
   // Investigación ("see it in action") and Principal ("run a request").
   // Domain proper nouns (§15-style: JEV, LLM, Choice/Score/Noul) stay
   // identical in both locales; everything else localizes.
+  errorBoundary: {
+    title: 'Something went wrong',
+    description: 'An unexpected error interrupted the page. Your data is safe — executions live on the server.',
+    retry: 'Try again'
+  },
+
   howItWorks: {
     title: 'How it works',
     intro:

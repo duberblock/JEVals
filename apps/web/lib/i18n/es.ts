@@ -265,6 +265,12 @@ export const es = {
   // CTA apuntan a Investigación ("verlo en acción") y Principal ("ejecutar
   // una solicitud"). Los sustantivos propios del dominio (JEV, LLM,
   // Choice/Score/Noul) quedan idénticos en ambos idiomas; el resto localiza.
+  errorBoundary: {
+    title: 'Algo salió mal',
+    description: 'Un error inesperado interrumpió la página. Tus datos están a salvo — las ejecuciones viven en el servidor.',
+    retry: 'Intentar de nuevo'
+  },
+
   howItWorks: {
     title: 'Cómo funciona',
     intro:
