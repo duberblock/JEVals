@@ -65,13 +65,14 @@ export function AppHeader() {
           </Link>
           {/* Provider settings — the simple environment configuration (the
               four integration cards with encrypted-at-rest keys). Beside the
-              help link in the utility zone, but from lg only: at 768 the
-              h-14 band fits exactly ONE utility icon beside nav + controls
-              (the §16 sweep gate measures a 1px overflow with two) — the
-              screen stays reachable by URL below lg. */}
+              help link in the utility zone. The theme toggle is sacrificed
+              below lg (owner ruling), so the 768 band now fits help +
+              settings beside the language selector — the old 1px overflow
+              was measured with FOUR icons. Phones reach Settings through
+              the mobile nav's utilities row. */}
           <Link
             aria-label={dictionary.settings.headerTitle}
-            className="hidden size-11 items-center justify-center rounded-lg text-foreground hover:bg-muted lg:inline-flex sm:size-9"
+            className="hidden size-11 items-center justify-center rounded-lg text-foreground hover:bg-muted md:inline-flex sm:size-9"
             data-testid="header-settings-link"
             href="/settings"
           >

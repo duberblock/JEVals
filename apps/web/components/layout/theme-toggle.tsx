@@ -26,7 +26,11 @@ export function ThemeToggle({ dictionary }: { dictionary: Dictionary['theme'] })
     <button
       aria-label={dictionary.toggle}
       // §16: size-11 (~44px) on mobile; the desktop header keeps size-9.
-      className="inline-flex size-11 items-center justify-center rounded-lg text-foreground hover:bg-muted sm:size-9"
+      // Owner ruling: the toggle is SACRIFICED below lg — at those widths
+      // the utility band cannot fit theme + language + help + settings, and
+      // theme is the least valuable of the four there (the stored preference
+      // still applies; only the switching is desktop-only).
+      className="hidden size-11 items-center justify-center rounded-lg text-foreground hover:bg-muted lg:inline-flex sm:size-9"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       title={dictionary.toggle}
       type="button"
