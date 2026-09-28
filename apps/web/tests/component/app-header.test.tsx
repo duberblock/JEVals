@@ -128,9 +128,10 @@ describe('AppHeader — language control singularity (§15.8)', () => {
     expect(screen.getAllByRole('combobox')).toHaveLength(1)
     expect(screen.getByRole('combobox').closest('header')).toBe(screen.getByRole('banner'))
 
-    // The mobile nav keeps only the three canonical section links.
+    // The mobile nav keeps the three canonical sections plus its two
+    // utility links (Settings, How it works) — and no second combobox.
     const mobileNav = screen.getByRole('navigation', { name: 'Mobile primary' })
-    expect(within(mobileNav).getAllByRole('link')).toHaveLength(3)
+    expect(within(mobileNav).getAllByRole('link')).toHaveLength(5)
     expect(within(mobileNav).queryByRole('combobox')).not.toBeInTheDocument()
   })
 })

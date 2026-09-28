@@ -18,6 +18,17 @@ describe('MobileNav', () => {
     expect(screen.queryByRole('link', { name: 'History' })).not.toBeInTheDocument()
   })
 
+  // The header's gear/help links are lg-only: this utilities row is the
+  // mobile door into Settings and the walkthrough.
+  it('exposes Settings and How it works above the primary bar', () => {
+    render(<MobileNav />)
+
+    expect(screen.getByTestId('mobile-settings-link')).toHaveAttribute('href', '/settings')
+    expect(screen.getByTestId('mobile-settings-link')).toHaveTextContent('Settings')
+    expect(screen.getByTestId('mobile-how-it-works-link')).toHaveAttribute('href', '/how-it-works')
+    expect(screen.getByTestId('mobile-how-it-works-link')).toHaveTextContent('How it works')
+  })
+
   // J1: the mobile nav follows the reactive locale like the rest of the chrome.
   it('renders in Spanish after the locale switches', () => {
     render(<MobileNav />)
@@ -37,20 +48,27 @@ describe('MobileNav', () => {
   it('keeps every link at a ~44px touch target', () => {
     render(<MobileNav />)
 
-    const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(3)
-    for (const link of links) {
+    // The PRIMARY bar keeps exactly three ~44px targets; the utilities row
+    // above rides at min-h-9 (secondary actions).
+    const primary = ['Principal', 'Investigation', 'Operation'].map((name) =>
+      screen.getByRole('link', { name })
+    )
+    expect(primary).toHaveLength(3)
+    for (const link of primary) {
       expect(link).toHaveClass('min-h-11')
     }
+    expect(screen.getByTestId('mobile-settings-link')).toHaveClass('min-h-9')
   })
 
   // §15.8: the bottom nav carries ONLY the three canonical sections — never a
   // duplicated language control (the header selector stays the only one).
-  it('contains no language control, only the canonical sections', () => {
+  it('contains no language control — three primary sections plus the two utilities', () => {
     render(<MobileNav />)
 
     const nav = screen.getByRole('navigation', { name: 'Mobile primary' })
-    expect(within(nav).getAllByRole('link')).toHaveLength(3)
+    // 3 canonical primary links + the Settings/How-it-works utilities row
+    // (the header's gear/help are lg-only). Still NO language control here.
+    expect(within(nav).getAllByRole('link')).toHaveLength(5)
     expect(within(nav).queryByRole('combobox')).not.toBeInTheDocument()
     expect(within(nav).queryByText('EN')).not.toBeInTheDocument()
   })
