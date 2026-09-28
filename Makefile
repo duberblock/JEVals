@@ -7,7 +7,7 @@ install-api:
 	cd $(API_DIR) && uv sync
 
 install-web:
-	cd $(WEB_DIR) && npm install
+	cd $(WEB_DIR) && npm ci
 
 dev:
 	./scripts/dev.sh

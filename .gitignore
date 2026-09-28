@@ -39,3 +39,7 @@ Thumbs.db
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Secrets — the Fernet master key generated beside the database when the
+# Settings screen stores provider credentials (crypto.py). NEVER commit.
+*.key
