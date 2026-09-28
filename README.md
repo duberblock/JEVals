@@ -33,16 +33,22 @@ In local development the API runs in pass-through mode (no auth enforcement,
 no provider calls required): request validation, the web UI, and the test
 suites all work offline.
 
-### What needs a provider
+### What needs configuration
 
-Running executions (beyond validation) talks to external services, configured
-through environment variables (see `.env.example`):
+Nothing, to start: the emulator works out of the box against its hosted
+default. To go beyond emulator-only runs you need:
 
-| Variable | What it enables |
+| Leg | What it needs |
 | --- | --- |
-| `EMULATOR_URL` | the deterministic emulator evaluation |
-| `TYPESAFE_API_KEY` | the JEV baseline (typesafe.ai) |
-| `OPENAI_API_KEY` | the independent answer + the judge (LLM) |
+| Emulator | nothing — hosted default; optionally your own endpoint |
+| JEV baseline | a typesafe.ai API key |
+| Judge + independent | any OpenAI-compatible endpoint, model and API key |
+
+Configure them from the app's **Settings** screen (below) — that is the
+primary path and it needs no files or redeploy. Environment variables
+(see `.env.example`) are the deployment-level alternative for pre-seeding
+a host; anything Settings saves overrides them, and clearing a saved
+field falls back to them.
 
 Anything unset is reported honestly by the API's `capabilities` endpoint —
 the UI shows unavailable sources as unavailable; nothing is invented.
@@ -55,8 +61,8 @@ model and API key for the emulator, the JEV baseline, the judge and the
 independent prediction — each independently, the two LLM legs being plain
 OpenAI-compatible endpoints. Keys are stored **encrypted at rest** (Fernet;
 set `SETTINGS_ENCRYPTION_KEY` or a `settings.key` file is generated beside
-the database). Values saved here override the environment; clearing a field
-falls back to it.
+the database). Each card carries a guide with its expected endpoint, model
+and the tested-provider matrix.
 
 ### Running fully local (no cloud keys)
 
