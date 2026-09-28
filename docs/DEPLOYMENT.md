@@ -7,7 +7,7 @@ self-hosted deployment).
 ## 1. Local development
 
 ```sh
-cp .env.example .env
+cp .env.example apps/api/.env   # optional — provider credentials go in Settings
 make install-api install-web
 make dev
 ```
@@ -61,7 +61,9 @@ The API is designed to sit behind the web origin or a reverse proxy:
 
 ## 3. Configuration
 
-Canonical names mirror `apps/api/app/core/config.py` (see `.env.example`):
+Canonical names mirror `apps/api/app/core/config.py` (`.env.example` keeps
+only the deployment essentials; provider credentials normally live in the
+Settings screen):
 
 | Variable | Purpose | Default |
 | --- | --- | --- |

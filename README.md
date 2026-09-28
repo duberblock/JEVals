@@ -18,7 +18,7 @@ from three web screens.
 Requirements: Python 3.13+ with [uv](https://docs.astral.sh/uv/), Node.js 22+.
 
 ```sh
-cp .env.example .env
+cp .env.example apps/api/.env   # optional — provider credentials go in Settings
 make install-api install-web
 make dev
 ```
@@ -46,9 +46,9 @@ default. To go beyond emulator-only runs you need:
 
 Configure them from the app's **Settings** screen (below) — that is the
 primary path and it needs no files or redeploy. Environment variables
-(see `.env.example`) are the deployment-level alternative for pre-seeding
-a host; anything Settings saves overrides them, and clearing a saved
-field falls back to them.
+(see `docs/DEPLOYMENT.md`) are the deployment-level alternative for
+pre-seeding a host; anything Settings saves overrides them, and clearing
+a saved field falls back to them.
 
 Anything unset is reported honestly by the API's `capabilities` endpoint —
 the UI shows unavailable sources as unavailable; nothing is invented.
@@ -88,15 +88,20 @@ Both provider legs can run on your machine:
   ollama pull qwen3:8b   # any chat model you like
   ```
 
+  From Settings: endpoint `http://localhost:11434/v1`, model `qwen3:8b`,
+  any non-empty API key, and **Use native JSON Schema off** (prompted-schema
+  mode — any chat model works). Or pre-seed the same values via environment:
+
   ```sh
   OPENAI_API_KEY=ollama            # any non-empty value; Ollama ignores it
   OPENAI_BASE_URL=http://localhost:11434/v1
   OPENAI_MODEL=qwen3:8b
-  OPENAI_STRUCTURED_OUTPUTS=false  # prompted-schema mode: any chat model works
+  OPENAI_STRUCTURED_OUTPUTS=false
   ```
 
-Only the JEV baseline keeps requiring a `TYPESAFE_API_KEY` — leave it unset
-and that source stays honestly unavailable.
+Only the JEV baseline keeps requiring a typesafe.ai key (Settings card
+**JEV Reference**) — leave it unset and that source stays honestly
+unavailable.
 
 ## Quickstart (Docker)
 
