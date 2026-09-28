@@ -12,7 +12,11 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 cd "$ROOT_DIR/apps/api"
-uv run uvicorn app.main:app --host 0.0.0.0 --port "$API_PORT" --reload &
+# --reload-dir app: watch ONLY the application code. Watching the whole
+# project (uvicorn's default here) includes .venv — a `uv sync` that
+# reinstalls packages then floods the watcher, and the reload respawn can
+# die (leaving the reloader holding the port, silently wedged).
+uv run uvicorn app.main:app --host 0.0.0.0 --port "$API_PORT" --reload --reload-dir app &
 API_PID=$!
 
 cd "$ROOT_DIR/apps/web"
