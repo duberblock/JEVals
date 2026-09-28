@@ -330,6 +330,11 @@ export const es = {
     fidelityTitle: '¿Qué es la fidelidad?',
     fidelityBody:
       'Una medida de similitud de 0 a 100% por pregunta — qué tan cerca están las respuestas según el tipo de la pregunta; el número global es el promedio de las preguntas. Se computa de forma determinista: ningún modelo juzga el cálculo.',
+    promptHelpTrigger: 'Prompt de ayuda',
+    promptHelpIntro:
+      'Pega este prompt en cualquier LLM junto con tu conversación, documento o contexto: construye un SystemOneRequest válido, listo para ejecutar aquí.',
+    promptCopy: 'Copiar prompt',
+    promptCopied: 'Copiado',
     seeItInAction: 'Verlo en acción',
     runARequest: 'Ejecutar una solicitud',
     // R50: atribución del autor — fuente única author.md (canon R06). La

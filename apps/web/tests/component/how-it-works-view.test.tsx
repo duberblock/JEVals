@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { HowItWorksView } from '../../components/how-it-works/how-it-works-view'
@@ -63,6 +63,25 @@ describe('HowItWorksView (EN default)', () => {
 
     expect(screen.getByRole('link', { name: 'See it in action' })).toHaveAttribute('href', '/investigation')
     expect(screen.getByRole('link', { name: 'Run a request' })).toHaveAttribute('href', '/')
+  })
+
+  // Step 01's help prompt (owner-provided): collapsed by default, opens to
+  // the copyable English prompt — the prompt bytes are locale-independent.
+  it('step 01 carries a collapsed help prompt that opens with the copyable prompt', () => {
+    render(<HowItWorksView />)
+
+    const box = screen.getByTestId('how-it-works-prompt-help')
+    const trigger = within(box).getByRole('button', { name: /help prompt/i })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(within(box).queryByTestId('how-it-works-prompt-text')).not.toBeInTheDocument()
+
+    fireEvent.click(trigger)
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    const text = within(box).getByTestId('how-it-works-prompt-text')
+    expect(text).toHaveTextContent('You do NOT answer the questions')
+    expect(text).toHaveTextContent('System One makes narrow, typed judgments')
+    expect(within(box).getByRole('button', { name: 'Copy prompt' })).toBeInTheDocument()
   })
 
   // R50 (owner request): the author attribution single-sourced from the

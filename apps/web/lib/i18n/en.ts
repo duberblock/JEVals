@@ -332,6 +332,11 @@ export const en = {
     fidelityTitle: 'What is fidelity?',
     fidelityBody:
       "A 0–100% similarity measure per question — how close the answers are, given the question's kind; the overall number is the average across questions. It is computed deterministically: no model judges the math.",
+    promptHelpTrigger: 'Help prompt',
+    promptHelpIntro:
+      'Paste this prompt into any LLM together with your conversation, document, or context — it builds a valid SystemOneRequest, ready to run here.',
+    promptCopy: 'Copy prompt',
+    promptCopied: 'Copied',
     seeItInAction: 'See it in action',
     runARequest: 'Run a request',
     // R50: author attribution single-sourced from the repo's author.md

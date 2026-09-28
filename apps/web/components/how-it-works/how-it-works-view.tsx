@@ -1,8 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 
+import { CircleHelp } from 'lucide-react'
+
+import { CopyButton } from '../investigation/copy-button'
+import { Button } from '../ui/button'
 import { useDictionary } from '../../lib/i18n/use-locale'
+import { SYSTEM_ONE_REQUEST_PROMPT } from '../../lib/prompts/system-one-request-prompt'
 
 // FB4 (R42/P31): /how-it-works — the product-level (no-nerd) walkthrough of
 // the evaluator pipeline, OUTSIDE the three canonical nav sections (plan §3).
@@ -32,6 +38,7 @@ export function HowItWorksView() {
             <div className="min-w-0 space-y-1">
               <h2 className="text-base font-semibold">{step.title}</h2>
               <p className="text-sm text-muted-foreground">{step.body}</p>
+              {index === 0 ? <RequestPromptHelp /> : null}
             </div>
           </li>
         ))}
@@ -124,5 +131,50 @@ export function HowItWorksView() {
         </p>
       </section>
     </section>
+  )
+}
+
+// Step 01's help prompt (owner-provided): a copyable prompt that turns any
+// conversation, document, or unstructured context into a valid
+// SystemOneRequest. Collapsed by default — the same disclosure idiom as the
+// Settings guides — and the prompt itself stays English-bytes in both
+// locales (its wording is part of its contract).
+function RequestPromptHelp() {
+  const { dictionary } = useDictionary()
+  const copy = dictionary.howItWorks
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="pt-2" data-testid="how-it-works-prompt-help">
+      <Button
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        size="xs"
+        type="button"
+        variant="ghost"
+      >
+        <CircleHelp aria-hidden="true" className="size-4" size={16} />
+        {copy.promptHelpTrigger}
+      </Button>
+      {open ? (
+        <div className="mt-2 space-y-2">
+          <p className="text-sm text-muted-foreground">{copy.promptHelpIntro}</p>
+          <div className="flex justify-end">
+            <CopyButton
+              copiedLabel={copy.promptCopied}
+              label={copy.promptCopy}
+              size="xs"
+              value={SYSTEM_ONE_REQUEST_PROMPT}
+            />
+          </div>
+          <pre
+            className="max-h-96 overflow-auto rounded-lg bg-muted/60 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap"
+            data-testid="how-it-works-prompt-text"
+          >
+            {SYSTEM_ONE_REQUEST_PROMPT}
+          </pre>
+        </div>
+      ) : null}
+    </div>
   )
 }
