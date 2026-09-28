@@ -1,0 +1,66 @@
+name: CI
+
+# The CI mirror of the repo's static-quality gates (Makefile: lint,
+# typecheck-api, secret-scan) plus the hermetic API and web test suites.
+# The full local gate (`make demo-gate`) additionally runs the Playwright
+# e2e suite; enable a Playwright job here once the browser download cost is
+# acceptable for the public repository.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api:
+    name: API (pytest + mypy)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: uv sync
+      - name: Tests (contracts + API)
+        run: uv run pytest -q
+      - name: Typecheck
+        run: uv run mypy app
+
+  web:
+    name: Web (vitest + tsc + lint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Unit and component tests
+        run: npm test
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint
+
+  scripts:
+    name: Scripts + secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Script tests
+        run: cd scripts && PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests
+      - name: Secret scan
+        run: python3 scripts/scan_secrets.py

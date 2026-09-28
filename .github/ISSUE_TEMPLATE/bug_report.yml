@@ -1,0 +1,58 @@
+name: Bug report
+description: Something does not behave as documented or expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Search existing issues first — if it already
+        exists, add your details there. **Never paste API keys**; include the
+        execution ID or Evidence tab content instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the defect. Include the execution ID when the bug happened during a run.
+      placeholder: The Judge leg returned HTTP 400 when switching providers…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: The behavior you expected instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - API (executions, providers)
+        - Web — Principal
+        - Web — Investigation
+        - Web — Operation
+        - Web — Settings
+        - e2e / tests
+        - Scripts
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps — the request JSON, the mode, and the provider configuration (endpoints/models only, never keys).
+      placeholder: |
+        1. Settings: Judge = …, Independent = …
+        2. Paste this SystemOneRequest…
+        3. Run "Evaluate prediction"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Self-hosted (Docker), local dev servers, OS — plus the provider endpoints involved.
+    validations:
+      required: false

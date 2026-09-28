@@ -135,8 +135,15 @@ vendor/types.ts      vendored TypeSafe SDK wire contract (MIT, verbatim)
   uppercased to `JEVALS`).
 - `JEV` — reserved for the typesafe.ai platform; as a run SOURCE label
   ("JEV" chip, rail marker, evidence section) it keeps its canonical
-  meaning. The emulator's summary display reads `Emulator 0.0.1` — a visual
-  alias only; evidence and payloads keep the real reported model.
+  meaning. Summary surfaces show the model each leg actually ran, exactly
+  as the endpoint reported it.
+
+## Contributing
+
+Issues, pull requests, the local gates and the collaboration process live in
+[CONTRIBUTING.md](CONTRIBUTING.md). Coding agents should also read
+[AGENTS.md](AGENTS.md). For help, see [SUPPORT.md](SUPPORT.md); to report a
+vulnerability, follow [SECURITY.md](SECURITY.md) — never a public issue.
 
 ## License
 
