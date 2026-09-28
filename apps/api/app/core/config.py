@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     default_model: str | None = None
     auth_user: str | None = None
     auth_pass: str | None = None
+    # Deploy fail-closed posture (truthy strings: 1/true/yes). Kept as a
+    # string so compose-style empty passthroughs never crash Settings.
+    auth_required: str | None = None
     api_port: int = 8000
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -85,6 +88,9 @@ class Settings(BaseSettings):
         "independent_model",
         "settings_encryption_key",
         "settings_key_file",
+        "auth_user",
+        "auth_pass",
+        "auth_required",
         mode="before",
     )
     @classmethod

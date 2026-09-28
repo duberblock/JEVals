@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import base64
-import os
 import secrets
 from collections.abc import Awaitable, Callable
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from app.core.config import get_settings
 from app.core.problems import problem_response
 
 PUBLIC_PATHS = {"/health", "/ready"}
@@ -22,14 +22,19 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in PUBLIC_PATHS:
             return await call_next(request)
 
-        auth_user = os.getenv("AUTH_USER")
-        auth_pass = os.getenv("AUTH_PASS")
+        # Canonical Settings — the same source every other module reads.
+        # This is what makes credentials in apps/api/.env (loaded by
+        # pydantic-settings into Settings, never exported to the process
+        # environment) actually reach the middleware.
+        settings = get_settings()
+        auth_user = settings.auth_user
+        auth_pass = settings.auth_pass
         if not auth_user or not auth_pass:
             # AUTH_REQUIRED (deploy posture, ADR-005 R28 ruling): fail closed
             # when origin credentials are missing — the Docker network is not
             # an auth boundary. Unset/false keeps the dev pass-through
             # (scripts/dev.sh sets no credentials).
-            if _is_truthy(os.getenv("AUTH_REQUIRED")):
+            if _is_truthy(settings.auth_required):
                 return problem_response(
                     request,
                     status=401,

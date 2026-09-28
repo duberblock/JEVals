@@ -1,8 +1,19 @@
 import base64
 
+import pytest
 from fastapi.testclient import TestClient
 
+from app.core.config import Settings, get_settings
 from app.main import app
+
+
+@pytest.fixture(autouse=True)
+def fresh_settings_cache():
+    """The middleware reads the canonical (lru_cached) Settings — clear the
+    cache around each test so the monkeypatched environment is what it sees."""
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 def basic(user: str, password: str) -> str:
@@ -73,3 +84,29 @@ def test_auth_accepts_valid_basic_credentials(monkeypatch):
     )
 
     assert response.status_code == 200
+
+
+def test_credentials_from_an_env_file_reach_the_middleware(tmp_path, monkeypatch):
+    """The reported seam: pydantic loads apps/api/.env into Settings but
+    never exports it to the process environment — a middleware reading
+    os.getenv could not see file credentials. The canonical Settings read
+    must enforce auth from the file alone."""
+    env_file = tmp_path / "test.env"
+    env_file.write_text("AUTH_USER=file-user\nAUTH_PASS=file-pass\n")
+    monkeypatch.delenv("AUTH_USER", raising=False)
+    monkeypatch.delenv("AUTH_PASS", raising=False)
+    monkeypatch.setattr(
+        "app.core.security.get_settings",
+        lambda: Settings(_env_file=env_file),
+    )
+
+    client = TestClient(app)
+
+    assert client.get("/api/v1/capabilities").status_code == 401
+    assert (
+        client.get(
+            "/api/v1/capabilities",
+            headers={"Authorization": basic("file-user", "file-pass")},
+        ).status_code
+        == 200
+    )
