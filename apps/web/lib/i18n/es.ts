@@ -662,7 +662,10 @@ export const es = {
     headerTitle: 'Configuración',
     title: 'Configuración de proveedores',
     subtitle:
-      'Endpoint, modelo y API key para cada integración. Las keys se guardan cifradas en reposo; lo que se deje en blanco conserva su valor actual.',
+      'Configura los servicios que JEVals utilizará para ejecutar, comparar y evaluar predicciones. Para empezar puedes usar los valores actuales; cambia una configuración solo si quieres probar otro modelo, usar otra referencia o ejecutar Judge e Independiente con otro proveedor compatible.',
+    concept:
+      'Emulador es el modelo que pruebas. JEV es la referencia. Judge interpreta las diferencias. Predicción independiente aporta una tercera respuesta a ciegas.',
+    keysNote: 'Las API keys se almacenan cifradas. Si dejas una key vacía al guardar, se conserva la que ya está almacenada.',
     save: 'Guardar',
     saving: 'Guardando…',
     saved: 'Guardado',
@@ -679,46 +682,85 @@ export const es = {
     fromUi: 'configurado aquí',
     configuredHere: 'configurado aquí',
     sourceLine: 'Configuración',
-    presetDefault: 'Predeterminado — SystemOne hospedado',
-    presetDemo: 'Demo público — Simple Jev',
-    presetCustom: 'URL propia',
+    presetDefault: 'SystemOne predeterminado',
+    presetDemo: 'Demo público Simple Jev',
+    presetCustom: 'Endpoint propio',
     available: 'Disponible',
     unavailable: 'No disponible',
     loadError: 'No se pudo cargar la configuración.',
     saveError: 'No se pudo guardar. Revisa el endpoint e intenta de nuevo.',
-    copyJudge: 'Copiar configuración del Judge',
-    structuredOutputs: 'Salidas estructuradas nativas (JSON Schema)',
-    structuredOutputsHint: 'Desmárcalo para modelos sin soporte estricto de schema (p. ej. GLM) — el schema viaja en el prompt en su lugar.',
-    copyJudgeDone: 'Configuración del Judge copiada',
+    copyJudge: 'Usar configuración del Judge',
+    copyJudgeDone: 'Configuración del Judge aplicada',
     copyJudgeError: 'El Judge aún no tiene configuración que copiar.',
-    helpTitle: 'Cómo llenar este formulario',
-    helpOpen: 'Ver guía',
+    structuredOutputs: 'Usar JSON Schema nativo',
+    structuredOutputsHint:
+      'Actívalo cuando el endpoint y el modelo soporten JSON Schema estricto de forma nativa (OpenAI, Ollama). Desactívalo para z.ai/GLM o si la pestaña Evidencia muestra que siempre termina en modo por prompt — la estructura requerida viaja dentro del prompt.',
+    guideLinks: {
+      emulator: '¿Qué puedo probar aquí?',
+      jev: '¿Qué puedo usar como referencia?',
+      judge: '¿Cómo funciona el Judge?',
+      independent: '¿Por qué es independiente?'
+    },
     help: {
       emulator:
-        'Funciona sin configurar — el endpoint predeterminado ya viene puesto. El modelo solo importa para endpoints de Simple Jev (ejemplo: featherless-ai/Qwen3.6-35B-A3B-classifier — vacío usa ese default). La API key solo si tu endpoint exige autenticación. Documentación de los servicios: Simple Jev — https://simple-jev.featherless.ai/skills.md · SystemOne hospedado — https://jevs-jimmy.blockito.cloud/SKILL.md.',
-      jev: 'Endpoint esperado: https://api.typesafe.ai — el servicio JEV de typesafe.ai; sirve la base sin path o el URL completo (…/v1/systemone). También sirven otros servicios SystemOne (p. ej. https://jevs-jimmy.blockito.cloud/v1/systemone) o endpoints de Simple Jev (…/v1/classifier). Modelo esperado: jev-latest (opcional — vacío lo usa por defecto en systemone; el modelo del classifier en Simple Jev). API key obligatoria — cualquier valor no vacío si el endpoint no exige autenticación. Documentación: https://jevs-jimmy.blockito.cloud/SKILL.md · Skill de typesafe.ai — https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md.',
-      judge: 'Endpoint esperado: https://api.openai.com/v1 — o cualquier endpoint OpenAI-compatible de chat completions. Modelo esperado: gpt-5-nano (u otro modelo que sirva tu endpoint). Endpoint, modelo y API key son los tres obligatorios.',
-      independent: 'Endpoint esperado: https://api.openai.com/v1 · Modelo esperado: gpt-5-nano — o oprime "Copiar configuración del Judge" para heredar los del Judge. Para endpoints tipo GLM desmarca "Salidas estructuradas nativas" para que las preguntas viajen en el prompt.'
+        '¿Qué configura esta caja?\nEl Emulador es el modelo bajo prueba: JEVals envía aquí el SystemOneRequest y usa su respuesta como la predicción que será evaluada. Participa en todos los modos (Emulador, Comparar con JEV, Evaluar predicción); la Predicción independiente, si la activas, corre en paralelo.\n\n¿Qué servicios puedo conectar?\nSystemOne — …/v1/systemone. El predeterminado es https://jevs-jimmy.blockito.cloud/v1/systemone (documentación: https://jevs-jimmy.blockito.cloud/SKILL.md).\nSimple Jev — …/v1/classifier. Demo público: https://simple-jev.featherless.ai/ (documentación: https://simple-jev.featherless.ai/skills.md).\n\n¿Qué opción debo elegir?\nSystemOne predeterminado: sin API key y el modelo lo decide el propio endpoint.\nDemo público Simple Jev: prueba JEVals rápido con un classifier público, sin key.\nEndpoint propio: para evaluar otro modelo o una implementación compatible con /v1/systemone o /v1/classifier.\n\n¿Qué representa en los resultados?\nEs la predicción bajo prueba; cuando hay comparación aparece a la izquierda: Emulador → JEV.\n\nResumen: Emulador = el modelo que estás probando.',
+      jev:
+        '¿Qué configura esta caja?\nDefine contra qué modelo quieres comparar el Emulador. JEVals envía exactamente el mismo request al modelo bajo prueba y al configurado aquí, y compara ambas respuestas pregunta por pregunta de forma determinista (fidelidad, alineación, diferencias).\n\nConfiguración predeterminada\nJEV de typesafe.ai — endpoint https://api.typesafe.ai · modelo jev-latest (vacío lo usa) · documentación: https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md. Es la recomendada cuando quieres medir qué tan fiel es otro modelo respecto a JEV.\n\n¿Puedo usar otra referencia?\nSí, cualquier servicio compatible: otro SystemOne (p. ej. https://jevs-jimmy.blockito.cloud/v1/systemone — https://jevs-jimmy.blockito.cloud/SKILL.md) o un Simple Jev (…/v1/classifier — https://simple-jev.featherless.ai/skills.md).\n\n¿Qué significa cambiar la referencia?\nLa fidelidad mide qué tan alineada está la respuesta del Emulador con la referencia configurada aquí. Cambiar esta caja cambia el marco con el que se mide.\n\n¿Cuándo se utiliza?\nEn Comparar con JEV y Evaluar predicción; no en modo Emulador.\n\n¿Qué representa en los resultados?\nLa referencia aparece a la derecha: Emulador → JEV.\n\nResumen: JEV de referencia = el modelo contra el que estás comparando.',
+      judge:
+        '¿Qué configura esta caja?\nEl Judge interpreta las diferencias entre el Emulador y la referencia; no calcula la fidelidad (eso lo hace JEVals de forma determinista). Recibe únicamente el request original, la respuesta del Emulador, la del JEV y la comparación — nunca ve la Predicción independiente. Solo participa en Evaluar predicción.\n\nConfiguración predeterminada\nEndpoint https://api.openai.com/v1 · modelo gpt-5-nano · JSON Schema nativo activado. Equivalente en variables:\nJUDGE_API_KEY=<tu key> · JUDGE_BASE_URL=https://api.openai.com/v1 · JUDGE_MODEL=gpt-5-nano · OPENAI_STRUCTURED_OUTPUTS=true\n\n¿Puedo usar otro proveedor?\nSí, cualquier endpoint OpenAI Chat Completions. Probado: OpenAI (gpt-5-nano — schema nativo sí), z.ai (glm-5.3 — no; https://api.z.ai/api/coding/paas/v4 o https://api.z.ai/api/paas/v4), Ollama local (qwen3:8b — sí, http://localhost:11434/v1) y Ollama Cloud (deepseek-v4-pro:cloud — sí, https://ollama.com/v1). La tabla al final de la página resume todas.\n\n¿Cuándo activar "Usar JSON Schema nativo"?\nActívalo cuando el endpoint y el modelo soporten json_schema estricto. Si la pestaña Evidencia muestra que el Judge siempre termina en prompted (la secuencia es strict → guided → prompted), desactívalo: la estructura viaja en el prompt y te ahorras intentos fallidos. Con z.ai/GLM desactívalo.\n\nResumen: Judge = el modelo que interpreta las diferencias entre el modelo bajo prueba y la referencia.',
+      independent:
+        '¿Qué configura esta caja?\nLa Predicción independiente genera una tercera respuesta a ciegas: recibe las mismas preguntas pero solo conoce el request original — nunca ve las respuestas del Emulador, del JEV, la comparación ni la evaluación del Judge.\n\n¿Para qué sirve?\nDespués de responder, JEVals comprueba si su respuesta se alinea o diverge de los demás resultados ejecutados. Si Emulador y JEV dicen A y la independiente dice B, aporta una señal distinta al consenso. Es opcional y puede activarse en cualquier modo.\n\nConfiguración\nUsa la misma clase de integración OpenAI-compatible que el Judge — sirven las mismas configuraciones probadas (tabla al final de la página). "Usar configuración del Judge" copia endpoint, modelo, key y JSON Schema; las ejecuciones siguen siendo independientes porque cada componente recibe un contexto distinto. La independencia no depende de usar otro proveedor o modelo distinto.\n\nJSON Schema nativo\nLa misma regla del Judge. Si la pestaña Evidencia muestra retry_reasons: malformed_structure de forma recurrente, desactívalo para evitar el reintento.\n\nResumen: Predicción independiente = una tercera respuesta generada sin conocer las respuestas que está verificando.'
     },
     providers: {
       emulator: {
         name: 'Emulador',
-        description: 'Pega el URL COMPLETO del endpoint — …/v1/systemone (cualquier servicio SystemOne) o …/v1/classifier (Simple Jev). El demo público gratuito funciona sin key.',
+        description:
+          'El modelo que quieres poner a prueba. JEVals envía aquí el request y usa su respuesta como la predicción que será evaluada.',
+        endpointHint: 'URL completa del servicio que ejecutará el modelo bajo prueba — …/v1/systemone o …/v1/classifier.',
+        modelHint: 'Solo para endpoints que permiten elegir modelo (Simple Jev). En el SystemOne predeterminado lo decide el endpoint.',
+        keyHint: 'Solo si tu endpoint exige autenticación; el servicio predeterminado funciona sin key.',
         demoEndpoint: 'https://simple-jev-demo-api.featherless.ai/v1/classifier',
         useDemo: 'Usar el demo público'
       },
       jev: {
-        name: 'Baseline JEV',
-        description: 'El baseline typesafe.ai contra el que se compara el emulador — idealmente el servicio JEV de typesafe.ai.'
+        name: 'JEV de referencia',
+        description:
+          'La referencia contra la que se compara el Emulador. Por defecto es JEV de typesafe.ai; también puedes usar otro servicio SystemOne o Simple Jev.',
+        endpointHint: 'Endpoint del modelo que usarás como referencia — https://api.typesafe.ai u otro servicio compatible.',
+        modelHint: 'Con https://api.typesafe.ai, si queda vacío se usa jev-latest.',
+        keyHint: 'Requerida; si dejas el campo vacío al guardar, se conserva la almacenada.'
       },
       judge: {
         name: 'Judge',
-        description: 'El juez semántico — cualquier endpoint OpenAI-compatible de chat completions.'
+        description:
+          'Evalúa las diferencias entre el Emulador y la referencia. Solo se usa en Evaluar predicción.',
+        endpointHint: 'Endpoint OpenAI Chat Completions — probado con OpenAI, z.ai, Ollama local y Ollama Cloud.',
+        modelHint: 'El modelo que evaluará las divergencias; puede ser cualquiera que sirva tu proveedor.'
       },
       independent: {
-        name: 'Independiente',
-        description: 'La predicción independiente — cualquier endpoint OpenAI-compatible de chat completions.'
+        name: 'Predicción independiente',
+        description:
+          'Una tercera predicción que responde a ciegas: solo ve el request original. Opcional en cualquier modo.',
+        endpointHint: 'Endpoint OpenAI Chat Completions — probado con OpenAI, z.ai, Ollama local y Ollama Cloud.',
+        modelHint: 'Puede ser el mismo modelo del Judge u otro distinto.'
       }
+    },
+    compat: {
+      title: 'Proveedores OpenAI-compatible probados',
+      intro: 'Judge y Predicción independiente pueden usar cualquier endpoint compatible con OpenAI Chat Completions. Estas configuraciones han sido probadas con JEVals:',
+      provider: 'Proveedor',
+      endpoint: 'Endpoint',
+      model: 'Modelo probado',
+      native: 'JSON Schema nativo',
+      note:
+        '"Compatible con OpenAI" describe el contrato de API, no el proveedor — puede ser OpenAI, z.ai, Ollama u otro servicio compatible.',
+      rows: [
+        ['OpenAI', 'https://api.openai.com/v1', 'gpt-5-nano', 'Sí'],
+        ['z.ai Coding Plan', 'https://api.z.ai/api/coding/paas/v4', 'glm-5.3', 'No'],
+        ['z.ai por consumo', 'https://api.z.ai/api/paas/v4', 'glm-5.3', 'No'],
+        ['Ollama local', 'http://localhost:11434/v1', 'qwen3:8b', 'Sí'],
+        ['Ollama Cloud', 'https://ollama.com/v1', 'deepseek-v4-pro:cloud', 'Sí']
+      ]
     }
   },
 }

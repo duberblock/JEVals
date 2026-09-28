@@ -173,7 +173,7 @@ it('the one-click public demo fills and saves the emulator endpoint', async () =
   expect(endpointInput.placeholder).toBe('https://simple-jev-demo-api.featherless.ai/v1/classifier')
 
   const presets = within(screen.getByTestId('settings-emulator-presets'))
-  fireEvent.click(presets.getByRole('button', { name: 'Public demo — Simple Jev' }))
+  fireEvent.click(presets.getByRole('button', { name: 'Public Simple Jev demo' }))
 
   await waitFor(() => expect(puts).toHaveLength(1))
   expect(puts[0]).toEqual({
@@ -215,19 +215,32 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   render(<SettingsView />)
   await screen.findByTestId('settings-card-independent')
 
-  // Per-card help disclosures: collapsed by default, open with the
-  // card's own guidance.
-  const helps = screen.getAllByRole('button', { name: 'View guide' })
-  expect(helps).toHaveLength(4)
-  for (const trigger of helps) {
+  // Per-card help disclosures: collapsed by default, open with the card's
+  // own guidance — each trigger carries its own question label.
+  const guideLabels = [
+    'What can I test here?',
+    'What can I use as a reference?',
+    'How does the Judge work?',
+    'Why is it independent?',
+  ]
+  for (const label of guideLabels) {
+    const trigger = screen.getByRole('button', { name: label })
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
     // The ? icon rides the trigger; aria-hidden keeps the name clean.
     expect(trigger.querySelector('svg')).toBeInTheDocument()
   }
-  fireEvent.click(within(screen.getByTestId('settings-card-emulator')).getByRole('button', { name: 'View guide' }))
-  expect(screen.getByText(/default endpoint is already set/i)).toBeInTheDocument()
-  fireEvent.click(within(screen.getByTestId('settings-card-independent')).getByRole('button', { name: 'View guide' }))
-  expect(screen.getByText(/inherit the judge/i)).toBeInTheDocument()
+  fireEvent.click(within(screen.getByTestId('settings-card-emulator')).getByRole('button', { name: 'What can I test here?' }))
+  expect(screen.getByText(/sends the SystemOneRequest here/i)).toBeInTheDocument()
+  fireEvent.click(within(screen.getByTestId('settings-card-independent')).getByRole('button', { name: 'Why is it independent?' }))
+  expect(screen.getByText(/only knows the original request/i)).toBeInTheDocument()
+
+  // The permanent conceptual line and the tested-providers matrix ride the
+  // page header/footer.
+  expect(screen.getByTestId('settings-concept')).toHaveTextContent('Emulator is the model you test')
+  expect(screen.getByTestId('settings-compat')).toHaveTextContent('deepseek-v4-pro:cloud')
+
+  // Field hints teach under the inputs.
+  expect(within(screen.getByTestId('settings-card-jev')).getByText(/blank uses jev-latest/i)).toBeInTheDocument()
 
   // Model inputs teach with example placeholders; endpoint inputs carry the
   // expected endpoint per provider (the emulator's demo URL wins for it).
@@ -242,7 +255,7 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   // status text lives in the pre-copy instance; the visible contract is
   // the filled inputs).
   const independent = within(screen.getByTestId('settings-card-independent'))
-  fireEvent.click(independent.getByRole('button', { name: 'Copy Judge configuration' }))
+  fireEvent.click(independent.getByRole('button', { name: 'Use Judge configuration' }))
   expect(posts.some((p) => p.url.endsWith('/copy-judge'))).toBe(true)
   await waitFor(() => {
     const refreshed = within(screen.getByTestId('settings-card-independent'))

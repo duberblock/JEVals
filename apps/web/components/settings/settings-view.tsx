@@ -187,6 +187,9 @@ function ProviderCard({
             type="text"
             value={endpoint}
           />
+          {labels.endpointHint ? (
+            <p className="text-xs text-muted-foreground">{labels.endpointHint}</p>
+          ) : null}
         </div>
         <div className="grid gap-1">
           <label className="text-sm font-medium" htmlFor={`settings-${name}-model`}>
@@ -201,6 +204,9 @@ function ProviderCard({
             type="text"
             value={model}
           />
+          {labels.modelHint ? (
+            <p className="text-xs text-muted-foreground">{labels.modelHint}</p>
+          ) : null}
         </div>
         {name === 'independent' || name === 'judge' ? (
           <div className="grid gap-1 sm:col-span-2">
@@ -231,6 +237,9 @@ function ProviderCard({
             type="password"
             value={apiKey}
           />
+          {'keyHint' in labels && labels.keyHint ? (
+            <p className="text-xs text-muted-foreground">{labels.keyHint}</p>
+          ) : null}
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -290,16 +299,22 @@ function CardHelp({ dictionary, name }: { dictionary: Dictionary['settings']; na
         variant="ghost"
       >
         <CircleHelp aria-hidden="true" className="size-4" size={16} />
-        {dictionary.helpOpen}
+        {dictionary.guideLinks[name]}
       </Button>
       {open ? (
         <div
           aria-labelledby={triggerId}
-          className="mt-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground"
+          className="mt-2 space-y-3 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground"
           id={regionId}
           role="region"
         >
-          {dictionary.help[name]}
+          {/* The guides arrive as \n\n-separated paragraphs; pre-line renders
+              those breaks without markdown. */}
+          {dictionary.help[name].split('\n\n').map((paragraph, index) => (
+            <p className="whitespace-pre-line" key={index}>
+              {paragraph}
+            </p>
+          ))}
         </div>
       ) : null}
     </div>
@@ -337,6 +352,14 @@ export function SettingsView() {
         {dictionary.settings.title}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">{dictionary.settings.subtitle}</p>
+      {/* The permanent conceptual line: what each box IS, before any field. */}
+      <p
+        className="mt-3 rounded-lg border border-border bg-muted/40 p-3 text-sm font-medium"
+        data-testid="settings-concept"
+      >
+        {dictionary.settings.concept}
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">{dictionary.settings.keysNote}</p>
       <div className="mt-6 grid gap-4">
         {failed ? (
           <p className="text-sm text-destructive" data-testid="settings-error">
@@ -371,6 +394,42 @@ export function SettingsView() {
           <p className="text-sm text-muted-foreground">…</p>
         )}
       </div>
+      <CompatibilityBlock dictionary={dictionary.settings} />
     </main>
+  )
+}
+
+// The tested-providers matrix for the two LLM legs — visible after the
+// cards, so "which provider can I use?" answers without opening a guide.
+function CompatibilityBlock({ dictionary }: { dictionary: Dictionary['settings'] }) {
+  const copy = dictionary.compat
+  return (
+    <section className="mt-6" data-testid="settings-compat">
+      <h2 className="text-base font-semibold">{copy.title}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{copy.intro}</p>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-xs tracking-wide text-muted-foreground">
+              <th className="py-2 pr-3 font-semibold">{copy.provider}</th>
+              <th className="py-2 pr-3 font-semibold">{copy.endpoint}</th>
+              <th className="py-2 pr-3 font-semibold">{copy.model}</th>
+              <th className="py-2 font-semibold">{copy.native}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {copy.rows.map(([provider, endpoint, model, native]) => (
+              <tr className="border-b border-border/60" key={provider}>
+                <td className="py-2 pr-3 font-medium">{provider}</td>
+                <td className="py-2 pr-3 font-mono text-xs wrap-anywhere">{endpoint}</td>
+                <td className="py-2 pr-3 font-mono text-xs">{model}</td>
+                <td className="py-2">{native}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">{copy.note}</p>
+    </section>
   )
 }
