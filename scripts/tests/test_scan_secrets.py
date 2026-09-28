@@ -30,6 +30,7 @@ class RuleSetTestCase(unittest.TestCase):
         ("AWS_ACCESS_KEY_ID", "x = AKIA0123456789ABCDEF"),
         ("GOOGLE_API_KEY", "x = AIza" + "a" * 35),
         ("SLACK_TOKEN", "x = xoxb-1234567890abcdefghijklmnop"),
+        ("FERNET_TOKEN", "stored = gAAAAAB" + "A" * 120),
         ("GENERIC_SECRET_ASSIGNMENT", 'api_key = "super-secret-value-123456"'),
         ("GENERIC_SECRET_ASSIGNMENT_UNQUOTED",
          "SERVICE_SECRET=correct-horse-battery-staple"),
@@ -40,6 +41,12 @@ class RuleSetTestCase(unittest.TestCase):
             with self.subTest(rule=rule_name):
                 rules = {f[2] for f in scan_secrets.scan_text(line, "synthetic.txt")}
                 self.assertIn(rule_name, rules)
+
+    def test_fernet_token_needs_token_length(self):
+        # The "gAAAAAB" prefix alone (e.g. prose or a truncated snippet) is
+        # not a ciphertext: the 100+ char body is what makes it a token.
+        text = "prefix gAAAAAB short"
+        self.assertEqual(scan_secrets.scan_text(text, "doc.md"), [])
 
     def test_clean_text_has_no_findings(self):
         text = "def add(a, b):\n    return a + b\n"

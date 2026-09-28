@@ -78,6 +78,13 @@ RULES: List[Tuple[str, re.Pattern]] = [
      re.compile(r"(?<![A-Za-z0-9_-])AIza[0-9A-Za-z_-]{35}")),
     ("SLACK_TOKEN",
      re.compile(r"(?<![A-Za-z0-9_-])xox[baprs]-[A-Za-z0-9-]{10,}")),
+    # Fernet ciphertext (provider keys stored by the settings UI, and any
+    # dumped credential): version+timestamp bytes always urlsafe-base64 to
+    # the literal prefix "gAAAAAB" followed by 100+ base64url characters.
+    # The raw 44-char master KEY is too generic to pattern-match — the
+    # gitignored *.key files and 0600 permissions cover that half.
+    ("FERNET_TOKEN",
+     re.compile(r"(?<![A-Za-z0-9_-])gAAAAAB[A-Za-z0-9_-]{100,}")),
     ("GENERIC_SECRET_ASSIGNMENT",
      re.compile(r"(?i)(api_key|apikey|secret|password|passwd|token)"
                 r"\s*[:=]\s*(['\"])(?P<value>[^'\"]{16,})\2")),
@@ -122,7 +129,8 @@ ALLOWLIST: List[Tuple[re.Pattern, str]] = [
                 r"|ghp_" r"abcdefghijklmnopqrstuvwxyz0123456789"
                 r"|AKIA" r"0123456789ABCDEF|xox" r"b-1234567890"
                 r"|super-secret-value-123456|correct-horse-battery-staple"
-                r"|abcdefghijklmnopqrstuvwxyz|abcDEFG123456789)"),
+                r"|abcdefghijklmnopqrstuvwxyz|abcDEFG123456789"
+                r"|gAAAAAB)"),
      "Scanner self-tests: canonical synthetic examples for the rule-set unittests, not credentials."),
 ]
 
