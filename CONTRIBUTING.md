@@ -15,7 +15,7 @@ and opening pull requests that pass the project's gates.
 ## Development environment
 
 Prerequisites: Python 3.13+ with [uv](https://docs.astral.sh/uv/), and
-Node.js 20+.
+Node.js 22+.
 
 ```bash
 git clone https://github.com/<org>/jevals.git
