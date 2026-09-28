@@ -61,23 +61,37 @@ The API is designed to sit behind the web origin or a reverse proxy:
 
 ## 3. Configuration
 
+### Providers — the Settings screen
+
+Once the stack is up, configure the four providers (emulator, JEV baseline,
+judge, independent) from the app's **Settings** screen: endpoint, model and
+API key per card, keys encrypted at rest. Values take effect immediately —
+no restart, no redeploy. The emulator works against its hosted default with
+zero configuration; only the JEV baseline (a typesafe.ai key) and the LLM
+legs (an OpenAI-compatible provider) need credentials.
+
+### Deployment variables
+
 Canonical names mirror `apps/api/app/core/config.py` (`.env.example` keeps
-only the deployment essentials; provider credentials normally live in the
-Settings screen):
+only these essentials):
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `DATABASE_URL` | SQLite location | `sqlite:///./jevals.db` (dev) |
 | `AUTH_USER` / `AUTH_PASS` | origin Basic Auth credentials | required when `AUTH_REQUIRED=true` |
 | `AUTH_REQUIRED` | API fail-closed auth posture | unset = dev pass-through |
-| `EMULATOR_URL` | deterministic emulator endpoint (full URL; empty/unset keeps the hosted SystemOne default) | `https://jevs-jimmy.blockito.cloud/v1/systemone` |
-| `TYPESAFE_API_KEY` / `TYPESAFE_BASE_URL` | JEV baseline provider | unset = source unavailable |
-| `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` | independent + judge provider | unset = source unavailable |
-| `OPENAI_STRUCTURED_OUTPUTS` | structured-output mode for the LLM provider | `true` |
-| `JUDGE_*` / `INDEPENDENT_*` | per-leg overrides (`_API_KEY`/`_BASE_URL`/`_MODEL`) over the shared `OPENAI_*` pair | unset = shared pair |
-| `EMULATOR_API_KEY` / `EMULATOR_MODEL` / `TYPESAFE_MODEL` | extra emulator/JEV fields | unset |
-| `SETTINGS_ENCRYPTION_KEY` | master key for credentials saved via the settings UI | unset → `settings.key` file |
-| `API_PORT` | local API port (`dev`, compose) | `8000` |
+| `SETTINGS_ENCRYPTION_KEY` | master key for credentials saved via the Settings UI | unset → `settings.key` file beside the DB (survives redeploys via the `./data` volume) |
+| `API_PORT` | local API port (`dev`) | `8000` |
+
+### Env pre-seed (optional, advanced)
+
+The provider variables still exist in `config.py` — `EMULATOR_URL`,
+`EMULATOR_API_KEY`, `EMULATOR_MODEL`, `TYPESAFE_*`, `OPENAI_*`
+(`OPENAI_STRUCTURED_OUTPUTS` included) and the per-leg `JUDGE_*` /
+`INDEPENDENT_*` overrides — for hosts that must come up pre-configured.
+`compose.yml` no longer passes them through; add the lines you need to its
+`api.environment` block. Anything saved in Settings overrides them, and
+clearing a saved field falls back to them.
 
 Availability is always reported honestly: the `capabilities` endpoint lists
 which sources can run, and the UI renders unavailable sources as
