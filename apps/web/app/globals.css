@@ -80,11 +80,6 @@ body {
   margin: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 @theme inline {
   --font-heading: var(--font-display);
   --font-sans: var(--font-sans);
@@ -238,6 +233,15 @@ a {
   }
   html {
     @apply font-sans;
+  }
+  /* Anchors inherit their text by default (nav and card links paint their
+     own classes) — but inside @layer base, so component utilities such as
+     text-primary/underline on documentation links WIN the cascade. An
+     UNLAYERED reset here would outrank every Tailwind utility layer and
+     silently strip link affordances. */
+  a {
+    color: inherit;
+    text-decoration: none;
   }
   ::selection { background-color: #d88b9e; color: #5d2536; } /* primary-container / on-primary-container */
   .dark ::selection { background-color: oklch(0.780 0.125 5.93); color: #39081a; }
