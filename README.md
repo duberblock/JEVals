@@ -23,28 +23,28 @@ models involved.
 
 ![JEVals execution summary: fidelity, alignment, divergence and the models of a run](docs/assets/01-JEVals-by-duberblock.png)
 
-### B. CHOICE Investigation
-
-Inspect classification decisions question by question. Compare the Emulator
-and JEV outputs, see whether both systems selected the same decision, and
-review the Judge and Independent results.
-
-![JEVals choice investigation: Emulator vs JEV decisions side by side](docs/assets/02-JEVals-by-duberblock.png)
-
-### C. SCORE Investigation
-
-Analyze score-based judgments and rubric alignment. Compare values, deltas,
-rubric levels, Judge interpretation, and the Independent prediction.
-
-![JEVals score investigation: values, delta and rubric levels with the Judge verdict](docs/assets/03-JEVals-by-duberblock.png)
-
-### D. NOUL Investigation
+### B. NOUL Investigation
 
 Analyze probabilistic judgments on the `0–1` scale. Compare Emulator and JEV
 probabilities, inspect the delta and midpoint behavior, and review the Judge
 and Independent signals when the predictions differ.
 
-![JEVals noul investigation: probabilities on the 0-1 rail with delta and midpoint](docs/assets/04-JEVals-by-duberblock.png)
+![JEVals noul investigation: probabilities on the 0-1 rail with delta and midpoint](docs/assets/02-JEVals-by-duberblock.png)
+
+### C. CHOICE Investigation
+
+Inspect classification decisions question by question. Compare the Emulator
+and JEV outputs, see whether both systems selected the same decision, and
+review the Judge and Independent results.
+
+![JEVals choice investigation: Emulator vs JEV decisions side by side](docs/assets/03-JEVals-by-duberblock.png)
+
+### D. SCORE Investigation
+
+Analyze score-based judgments and rubric alignment. Compare values, deltas,
+rubric levels, Judge interpretation, and the Independent prediction.
+
+![JEVals score investigation: values, delta and rubric levels with the Judge verdict](docs/assets/04-JEVals-by-duberblock.png)
 
 ### E. Operation and Timing
 
