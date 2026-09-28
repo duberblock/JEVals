@@ -231,13 +231,19 @@ it('shows the guide collapsed by default, opens it, hints models and copies the 
   }
   fireEvent.click(within(screen.getByTestId('settings-card-emulator')).getByRole('button', { name: 'What can I test here?' }))
   expect(screen.getByText(/sends the SystemOneRequest here/i)).toBeInTheDocument()
+  // Documentation URLs inside the guides are clickable anchors — sentence
+  // punctuation stays out of the href.
+  const skillLink = screen.getByRole('link', { name: 'https://jevs-jimmy.blockito.cloud/SKILL.md' })
+  expect(skillLink).toHaveAttribute('href', 'https://jevs-jimmy.blockito.cloud/SKILL.md')
+  expect(skillLink).toHaveAttribute('target', '_blank')
   fireEvent.click(within(screen.getByTestId('settings-card-independent')).getByRole('button', { name: 'Why is it independent?' }))
   expect(screen.getByText(/only knows the original request/i)).toBeInTheDocument()
 
   // The permanent conceptual line and the tested-providers matrix ride the
-  // page header/footer.
+  // page header/footer — endpoints in the matrix are links too.
   expect(screen.getByTestId('settings-concept')).toHaveTextContent('Emulator is the model you test')
   expect(screen.getByTestId('settings-compat')).toHaveTextContent('deepseek-v4-pro:cloud')
+  expect(screen.getByRole('link', { name: 'https://ollama.com/v1' })).toHaveAttribute('href', 'https://ollama.com/v1')
 
   // Field hints teach under the inputs.
   expect(within(screen.getByTestId('settings-card-jev')).getByText(/blank uses jev-latest/i)).toBeInTheDocument()

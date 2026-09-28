@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 
 import { CircleHelp } from 'lucide-react'
 
@@ -65,6 +65,38 @@ const REQUIRED: Record<ProviderName, { model: boolean; apiKey: boolean }> = {
   jev: { model: false, apiKey: true },
   judge: { model: true, apiKey: true },
   independent: { model: true, apiKey: true },
+}
+
+// Any http(s) URL inside a guide paragraph becomes a clickable anchor. The
+// i18n layer stays plain strings; trailing sentence punctuation (.,;:)) is
+// kept OUT of the href and rendered as text after the link.
+const URL_PATTERN = /https?:\/\/[^\s]+/g
+const TRAILING_PUNCTUATION = /[.,;:)\]]+$/
+
+function LinkifiedText({ text }: { text: string }) {
+  const nodes: ReactNode[] = []
+  let lastIndex = 0
+  for (const match of text.matchAll(URL_PATTERN)) {
+    const raw = match[0]
+    const trailing = raw.match(TRAILING_PUNCTUATION)?.[0] ?? ''
+    const url = trailing ? raw.slice(0, raw.length - trailing.length) : raw
+    const index = match.index ?? 0
+    if (index > lastIndex) nodes.push(text.slice(lastIndex, index))
+    nodes.push(
+      <a
+        className="underline underline-offset-2"
+        href={url}
+        key={`${url}-${index}`}
+        rel="noreferrer"
+        target="_blank"
+      >
+        {url}
+      </a>
+    )
+    lastIndex = index + raw.length
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex))
+  return <>{nodes}</>
 }
 
 
@@ -309,10 +341,10 @@ function CardHelp({ dictionary, name }: { dictionary: Dictionary['settings']; na
           role="region"
         >
           {/* The guides arrive as \n\n-separated paragraphs; pre-line renders
-              those breaks without markdown. */}
+              those breaks without markdown, and URLs become links. */}
           {dictionary.help[name].split('\n\n').map((paragraph, index) => (
             <p className="whitespace-pre-line" key={index}>
-              {paragraph}
+              <LinkifiedText text={paragraph} />
             </p>
           ))}
         </div>
@@ -421,7 +453,11 @@ function CompatibilityBlock({ dictionary }: { dictionary: Dictionary['settings']
             {copy.rows.map(([provider, endpoint, model, native]) => (
               <tr className="border-b border-border/60" key={provider}>
                 <td className="py-2 pr-3 font-medium">{provider}</td>
-                <td className="py-2 pr-3 font-mono text-xs wrap-anywhere">{endpoint}</td>
+                <td className="py-2 pr-3 font-mono text-xs wrap-anywhere">
+                  <a className="underline underline-offset-2" href={endpoint} rel="noreferrer" target="_blank">
+                    {endpoint}
+                  </a>
+                </td>
                 <td className="py-2 pr-3 font-mono text-xs">{model}</td>
                 <td className="py-2">{native}</td>
               </tr>
